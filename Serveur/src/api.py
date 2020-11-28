@@ -1,16 +1,24 @@
+import sqlite3
 from flask import Blueprint, request, jsonify
 
 api = Blueprint('api', __name__)
 
-aliste_devoirs = []
-
 def ajouter_devoir(args):
     print("Nouveau devoir")
-    aliste_devoirs.append(args['devoir'])
-    return 'ajouté'
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    enonce,prof = args["enonce"], args["prof"]
+    print(enonce, prof)
+    c.execute("INSERT INTO devoirs (enonce, prof) VALUES (?, ?);", [enonce, prof])
+    db.commit()
+    return jsonify({}), 200
 
 def liste_devoirs():
-    return jsonify(aliste_devoirs)
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    rows = c.execute("SELECT * FROM devoirs")
+    devoirs = [row for row in rows]
+    return jsonify(devoirs), 200
 
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
