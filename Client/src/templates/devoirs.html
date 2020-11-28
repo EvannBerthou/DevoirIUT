@@ -1,6 +1,22 @@
 <!doctype HTML>
-<ul>
-{% for devoir in devoirs %}
-    <li> {{ devoir }} </li>
-{% endfor%}
-</ul>
+<style>
+table, th, td {
+    border: 1px solid black;
+}
+
+</style>
+<table>
+    <tr>
+        <th> Enonce </th>
+        <th> Prof </th>
+        <th> Date </th>
+        <th> A rendre </th>
+    </tr>
+    {% for devoir in devoirs %}
+    <tr>
+        {% for c in devoir %}
+            <td> {{ c }} </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
