@@ -15,6 +15,7 @@ c.execute('CREATE TABLE classes (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)
 for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
 
+c.execute('DROP TABLE IF EXISTS devoirs')
 c.execute("""
     CREATE TABLE devoirs (
         enonce TEXT,
@@ -24,10 +25,6 @@ c.execute("""
         a_rendre INT DEFAULT 0,
         FOREIGN KEY(classe) REFERENCES classes(id)
     );
-""")
-
-c.execute("""
-    INSERT INTO devoirs (enonce, classe, prof) VALUES ('Devoir 1', 3, 0), ('Devoir 2', 8, 1);
 """)
 
 c.close()
