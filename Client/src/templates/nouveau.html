@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<script>
+    var ouvert = false;
+    function afficherClasses() {
+        var choix = document.getElementById("classes");
+        console.log("t");
+        ouvert = !ouvert
+        choix.style.display = (ouvert === true) ? "block" : "none";
+    }
+</script>
+
+<style>
+.multiselect {
+    width: 200px;
+}
+.selectBox {
+    position: relative;
+}
+.selectbox select {
+    width: 100%;
+}
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#classes {
+    display: none;
+    border: 1px black solid;
+}
+
+#classes label {
+    display: block;
+}
+</style>
+
+<form action="/nouveau" method="POST">
+    <label> Enonce </label> </br>
+    <textarea name="enonce"> </textarea>
+
+    <label> Prof </label> </br>
+    <input type="number" name="prof"> </input>
+
+    <div class="multiselect">
+        <div class="selectBox" onclick="afficherClasses()">
+            <select>
+                <option> Choix des classes </option>
+            </select>
+            <div class="overSelect"></div>
+        </div>
+        <div id="classes">
+            {% for option in classes %}
+                <label for="{{ option }}">
+                    <input type="checkbox" name="{{ option }}" />
+                    {{ option }} 
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <button type="submit"> Ok </button>
+</form>
