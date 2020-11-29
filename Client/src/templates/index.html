@@ -1,0 +1,10 @@
+<!DOCTYPE HTML>
+
+<form action="/classe">
+    <select name="classe">
+        {% for option in classes %}
+            <option value={{ option }}> {{ option }} </option>
+        {% endfor %}
+    </select>
+    <button type="submit"> Get </button>
+</form>
