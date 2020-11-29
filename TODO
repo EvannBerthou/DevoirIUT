@@ -1,0 +1,18 @@
+- Liste des profs
+    - Nom, email
+- Matière du devoir
+- Afficher que les devoirs à venir
+- Modificitation des devoirs
+- Suppression d'un devoir
+- Regrouper les devoirs par jour
+- Pièces jointe
+- Ne laisser l'accès aux devoirs qu'aux prof (page des devoirs accessibles par mot de passe)
+- Design du site
+- Option de filtre
+
+- Page d'administration
+    - Gestion matières, profs, classes
+
+- A reflechir
+    - Compte ? Rendrez l'utilisation moins pratique par plus d'étapes
+    - Comment host le site

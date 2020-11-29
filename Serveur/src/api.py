@@ -7,14 +7,15 @@ def ajouter_devoir(args):
     print("Nouveau devoir")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    enonce,prof,classe = args["enonce"], args["prof"], args["classe"]
-
-    c.execute("""
-        INSERT INTO devoirs (enonce, prof, classe)
-        VALUES (?, ?, 
-            (SELECT id FROM classes WHERE nom = ?));
-    """,
-    [enonce, prof, classe])
+    enonce,prof = args["enonce"], args["prof"]
+    classes = args.getlist('classe')
+    for classe in classes:
+        c.execute("""
+            INSERT INTO devoirs (enonce, prof, classe)
+            VALUES (?, ?, 
+                (SELECT id FROM classes WHERE nom = ?));
+        """,
+        [enonce, prof, classe])
 
     db.commit()
     return jsonify({}), 200
