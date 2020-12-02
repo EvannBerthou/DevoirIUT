@@ -20,6 +20,7 @@ c.execute("""
     CREATE TABLE devoirs (
         enonce TEXT,
         classe INT,
+        matiere TEXT,
         prof INT,
         jour date DEFAULT (date(datetime('now', '+1 day', 'localtime'))),
         a_rendre INT DEFAULT 0,
