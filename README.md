@@ -9,3 +9,10 @@ pip3 install -r requirements.txt
 export FLASK_APP=src/main.py
 flask run
 ```
+
+## Membres
+Evann : Back-end
+Benjamin : Back-end
+Alexandre : SQL/BD
+Thomas : HTML/CSS
+Hugo : HTML/CSS
