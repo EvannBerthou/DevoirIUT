@@ -11,8 +11,8 @@ flask run
 ```
 
 ## Membres
-Evann : Back-end
-Benjamin : Back-end
-Alexandre : SQL/BD
-Thomas : HTML/CSS
-Hugo : HTML/CSS
+Evann : Back-end  
+Benjamin : Back-end  
+Alexandre : SQL/BD  
+Thomas : HTML/CSS  
+Hugo : HTML/CSS  
