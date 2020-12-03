@@ -28,5 +28,16 @@ c.execute("""
     );
 """)
 
+c.execute('DROP TABLE IF EXISTS enseignant')
+c.execute("""
+    CREATE TABLE enseignant (
+    	nom TEXT,
+    	prenom TEXT,
+    	mail TEXT,
+    	pwd TEXT);
+""")
+
+c.execute("INSERT INTO enseignant VALUES ('Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
+
 c.close()
 db.commit()
