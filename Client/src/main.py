@@ -1,5 +1,5 @@
 import requests, json
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, make_response
 
 app = Flask(__name__, template_folder='templates')
 
@@ -30,6 +30,25 @@ def home():
         return render_template('index.html', classes=classes)
     else:
         return '<h1> Erreur </h1>'
+
+@app.route('/connexion',methods=['GET', 'POST'])
+def connexion():
+    if request.method=='GET':
+        return render_template('connexion.html', Erreur=False)
+    
+    elif request.method == 'POST':
+        email = request.form['email']
+        pwd=request.form['pwd']
+
+        connect_data= requests.get('http://localhost:5000/api/connexion', params={'email': email,'pwd':pwd})
+        connect_data=json.loads(connect_data.content)
+        #  recuperation des donne de la personne conecteé nom , prenom 
+        if connect_data:
+            return redirect('/nouveau')
+        else:
+            return render_template('connexion.html', Erreur=True)
+
+
 
 @app.route('/nouveau', methods=['GET', 'POST'])
 def nouveau_devoir():
