@@ -30,8 +30,28 @@ def liste_devoirs(id_classe):
         AND classes.nom = ?;
     """,
     [id_classe])
-    devoirs = [row for row in rows]
+    devoirs=[row for row in rows]
     return jsonify(devoirs), 200
+
+
+
+def is_connected(args):
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    pwd_entrer,email_entrer=args["pwd"],args['email']
+    pwd=c.execute("""
+        SELECT pwd 
+        FROM enseignant
+        WHERE mail=? ;
+        """,
+    [email_entrer])
+    pwd=[pw for pw in pwd]
+    if pwd:
+        pwd=pwd[0][0]
+        if pwd == pwd_entrer:
+            data=c.execute(" SELECT nom,prenom FROM enseignant WHERE mail==?;",[email_entrer])
+            return jsonify([dat for dat in data]),200
+    return jsonify({}), 200
 
 
 
@@ -41,6 +61,13 @@ def devoirs():
         return ajouter_devoir(request.args)
     elif request.method == 'GET':
         return liste_devoirs(request.args['classe'])
+
+
+
+
+@api.route('/connexion')
+def connect():
+    return is_connected(request.args)
 
 @api.route('/classe', methods=['GET'])
 def classes():
