@@ -35,7 +35,7 @@ def home():
 def nouveau_devoir():
     if request.method == 'GET':
         classes = liste_classes()
-        if classes is not None:
+        if classes:
             return render_template('nouveau.html', classes=classes)
         else:
             return '<h1> Erreur </h1>'
@@ -43,6 +43,7 @@ def nouveau_devoir():
     elif request.method == 'POST':
         classes = [key for key, val in request.form.items() if val == 'on']
         enonce = request.form['enonce']
+        matiere=request.form['matiere']
         prof = request.form['prof']
-        requests.post('http://localhost:5000/api/devoirs', params={'enonce': enonce, 'prof': prof, 'classe': classes})
+        requests.post('http://localhost:5000/api/devoirs', params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes})
         return redirect('/')
