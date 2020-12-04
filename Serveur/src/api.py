@@ -63,8 +63,6 @@ def devoirs():
         return liste_devoirs(request.args['classe'])
 
 
-
-
 @api.route('/connexion')
 def connect():
     return is_connected(request.args)
