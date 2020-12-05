@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, os
 from flask import Flask, request, render_template, redirect
 
 app = Flask(__name__, template_folder='templates')
@@ -28,5 +28,22 @@ def nouveau_devoir():
         enonce = request.form['enonce']
         matiere=request.form['matiere']
         prof = request.form['prof']
-        requests.post('http://localhost:5000/api/devoirs', params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes})
+        pj = None # Pièce jointe
+        if 'file' in request.files:
+            pj = request.files['file']
+            if pj.filename != '':
+                pj.save(os.path.join('.', pj.filename))
+
+        files = {}
+        if pj != None:
+            files[pj.filename] = open(pj.filename, 'rb')
+
+        requests.post('http://localhost:5000/api/devoirs', 
+            params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes},
+            files=files
+        )
+        
+        if pj != None:
+            os.remove(pj.filename)
+
         return redirect('/')

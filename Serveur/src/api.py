@@ -1,12 +1,19 @@
-import sqlite3
+import sqlite3, os
 from flask import Blueprint, request, jsonify
 
 api = Blueprint('api', __name__)
 
-def ajouter_devoir(args):
+def ajouter_devoir(args, files):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce,matiere,prof = args["enonce"],args["matiere"],args["prof"]
+
+    if files:
+        filename = next(iter(files.to_dict()))  
+        print(files)
+        pj = files[filename]
+        pj.save(os.path.join('.', filename))
+
     classes = args.getlist('classe')
     for classe in classes:
         c.execute("""
@@ -33,8 +40,6 @@ def liste_devoirs(id_classe):
     devoirs=[row for row in rows]
     return jsonify(devoirs), 200
 
-
-
 def is_connected(args):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -58,7 +63,7 @@ def is_connected(args):
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
     if request.method == 'POST':
-        return ajouter_devoir(request.args)
+        return ajouter_devoir(request.args, request.files)
     elif request.method == 'GET':
         return liste_devoirs(request.args['classe'])
 

@@ -37,21 +37,19 @@
 }
 </style>
 
-<form action="/nouveau" method="POST">
-    <label> <br>Enonce </label></br>
+<form action="/nouveau" method="POST" enctype="multipart/form-data">
+    <label> Enonce </label></br>
     <textarea name="enonce"></textarea>
-    <label> <br>Matère </label> </br>
+
+    <label> Matère </label> </br>
     <textarea name="matiere"></textarea>
-    <label> <br>Prof </label> </br>
+
+    <label> Prof </label> </br>
     <input type="number" name="prof"></input>
-    <!-- ajout d'un fichier devoir-->
-     voir coment le gere dans le serveur pour le stoker
-    <button onclick="">ajouter fichier </button>
-    <!--
-    commment ajouter d'autre fichier ? 
-    <label><br> Fichier </label>
-    <input type="file" name="file"></form>
-    -->
+
+    <label> Fichier </label>
+    <input type="file" name="file">
+
     <div class="multiselect">
         <div class="selectBox" onclick="afficherClasses()">
             <select>
