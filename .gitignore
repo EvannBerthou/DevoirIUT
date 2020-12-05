@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 *.swp
 activate.sh
+run.sh
 *.db
