@@ -1,32 +1,23 @@
-echo "Création du venv Client"
-python3 -m venv Client/venv
-echo "Création du venv Serveur"
-python3 -m venv Serveur/venv
+#!/bin/bash
+setup () {
+    echo "Création de $1/venv"
+    python3 -m venv $1/venv
 
-echo "Setup client"
-cd Client
-source ./venv/bin/activate
-echo "Installation packages"
-pip install -r requirements.txt
-echo "source ./venv/bin/activate; export FLASK_APP=src/main.py;" > activate.sh
-chmod +x activate.sh
-echo "flask run --port=5001" > run.sh
-chmod +x run.sh
-deactivate
+    cd $1
+    echo "$(pwd)"
+    source ./venv/bin/activate
+    echo "Installation packages"
+    pip install -r requirements.txt
+    echo "source ./venv/bin/activate; export FLASK_APP=src/main.py;" > activate.sh
+    chmod +x activate.sh
+    echo "flask run --port=$2" > run.sh
+    chmod +x run.sh
+    deactivate
+    cd ..
+}
 
-cd ..
+setup "Serveur" 5000
+setup "ClientEleve" 5001
+setup "ClientProf" 5002
 
-echo "Setup serveur"
-cd Serveur
-source ./venv/bin/activate
-echo "source ./venv/bin/activate; export FLASK_APP=src/main.py" > activate.sh
-chmod +x activate.sh
-echo "flask run --port=5000" > run.sh
-chmod +x run.sh
-echo "Installation packages"
-pip install -r requirements.txt
-echo "Setup db"
-python setup_db.py
-deactivate
-
-echo "Installation complète !"
+echo "Installation terminée"

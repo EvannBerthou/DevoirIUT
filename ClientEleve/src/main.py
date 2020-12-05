@@ -1,5 +1,5 @@
 import requests, json
-from flask import Flask, request, render_template, redirect, url_for, make_response
+from flask import Flask, request, render_template, redirect
 
 app = Flask(__name__, template_folder='templates')
 
@@ -44,25 +44,6 @@ def connexion():
         connect_data=json.loads(connect_data.content)
         #  recuperation des donne de la personne conecteé nom , prenom 
         if connect_data:
-            return redirect('/nouveau')
+            return redirect('/')
         else:
             return render_template('connexion.html', Erreur=True)
-
-
-
-@app.route('/nouveau', methods=['GET', 'POST'])
-def nouveau_devoir():
-    if request.method == 'GET':
-        classes = liste_classes()
-        if classes:
-            return render_template('nouveau.html', classes=classes)
-        else:
-            return '<h1> Erreur </h1>'
-
-    elif request.method == 'POST':
-        classes = [key for key, val in request.form.items() if val == 'on']
-        enonce = request.form['enonce']
-        matiere=request.form['matiere']
-        prof = request.form['prof']
-        requests.post('http://localhost:5000/api/devoirs', params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes})
-        return redirect('/')
