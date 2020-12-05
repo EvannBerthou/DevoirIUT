@@ -1,14 +1,19 @@
 # DevoirIUT
 
 ## Installation
+```bash
+./install_excalynote : va tout setup automatiquement
 ```
-git clone https://github.com/EvannBerthou/DevoirIUT
-cd DevoirIUT/Serveur
-source ./bin/activate
-pip3 install -r requirements.txt
-export FLASK_APP=src/main.py
-flask run
+## Utilisation
+Il y a 3 dossiers différents pour le projet : le site pour les élèves, le site pour les profs et le serveur qui fait l'API (bd)  
+Pour lancer un script :  
+```bash
+cd <dossier voulu> (ClientEleve, ClientProf, Serveur)
+. activate.sh
+./run.sh
 ```
+Un lien sera marqué dans la console, il suffit juste d'aller sur le lien dans le navigateur : http://127.0.0.1:500x  
+Le code est dans le dossier src (et les pages html dans src/templates)  
 
 ## Membres
 Evann : Back-end  
