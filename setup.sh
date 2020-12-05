@@ -8,8 +8,10 @@ cd Client
 source ./venv/bin/activate
 echo "Installation packages"
 pip install -r requirements.txt
-echo "source ./venv/bin/activate; export FLASK_APP=src/main.py" > activate.sh
+echo "source ./venv/bin/activate; export FLASK_APP=src/main.py;" > activate.sh
 chmod +x activate.sh
+echo "flask run --port=5001" > run.sh
+chmod +x run.sh
 deactivate
 
 cd ..
@@ -19,6 +21,8 @@ cd Serveur
 source ./venv/bin/activate
 echo "source ./venv/bin/activate; export FLASK_APP=src/main.py" > activate.sh
 chmod +x activate.sh
+echo "flask run --port=5000" > run.sh
+chmod +x run.sh
 echo "Installation packages"
 pip install -r requirements.txt
 echo "Setup db"
