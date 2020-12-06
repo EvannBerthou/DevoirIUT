@@ -10,7 +10,10 @@ db = sqlite3.connect('src/devoirs.db')
 c = db.cursor()
 
 c.execute('DROP TABLE IF EXISTS classes')
-c.execute('CREATE TABLE classes (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT);')
+c.execute('CREATE TABLE classes (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT NOT NULL);')
+
+c.execute('DROP TABLE IF EXISTS pj')
+c.execute('CREATE TABLE pj (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT NOT NULL, contenue BLOB NOT NULL);')
 
 for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
@@ -24,7 +27,9 @@ c.execute("""
         prof INT,
         jour date DEFAULT (date(datetime('now', '+1 day', 'localtime'))),
         a_rendre INT DEFAULT 0,
-        FOREIGN KEY(classe) REFERENCES classes(id)
+        pj INT,
+        FOREIGN KEY(classe) REFERENCES classes(id),
+        FOREIGN KEY(pj) REFERENCES pj(id)
     );
 """)
 
