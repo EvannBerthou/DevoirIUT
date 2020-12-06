@@ -14,12 +14,21 @@ table, th, td {
         <th> Matiere </th>
         <th> Prof </th>
         <th> Date </th>
+        <th> Pièce jointe </th>
         <th> A rendre </th>
     </tr>
     {% for devoir in devoirs %}
     <tr>
         {% for c in devoir %}
-            <td> {{ c }} </td>
+            {% if loop.index == 5 %}
+                {% if c %}
+                    <td> <a href="{{ url_for('pj', pj = c) }}"> PJ </a> </td>
+                {% else %}
+                    <td> </td>
+                {% endif %}
+            {% else %}
+                <td> {{ c }} </td>
+            {% endif %}
         {% endfor %}
     </tr>
     {% endfor %}

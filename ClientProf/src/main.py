@@ -30,8 +30,9 @@ def nouveau_devoir():
         prof = request.form['prof']
         pj = None # Pièce jointe
         if 'file' in request.files:
-            pj = request.files['file']
-            if pj.filename != '':
+            file = request.files['file']
+            if file.filename != '':
+                pj = file
                 pj.save(os.path.join('.', pj.filename))
 
         files = {}
