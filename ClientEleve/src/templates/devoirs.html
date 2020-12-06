@@ -22,10 +22,11 @@ table, th, td {
         {% for c in devoir %}
             {% if loop.index == 5 %}
                 {% if c %}
-                    <td> <a href="{{ url_for('pj', pj = c) }}"> PJ </a> </td>
+                    <td> <a href="{{ url_for('pj', pj = c) }}"> {{ devoir[loop.index] }} </a> </td>
                 {% else %}
                     <td> </td>
                 {% endif %}
+            {% elif loop.index == 6 %}
             {% else %}
                 <td> {{ c }} </td>
             {% endif %}

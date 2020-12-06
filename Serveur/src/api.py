@@ -47,14 +47,21 @@ def liste_devoirs(id_classe):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     rows = c.execute("""
-        SELECT enonce, matiere, prof, jour, pj,
+        SELECT enonce, matiere, prof, jour, 0, 0,
         REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM devoirs, classes
-        WHERE devoirs.classe = classes.id
-            AND classes.nom = ?;
+        FROM devoirs
+        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
+            AND (devoirs.pj IS NULL)
+        UNION
+        SELECT enonce, matiere, prof, jour, pj.id, pj.nom,
+        REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+        FROM devoirs, pj
+        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
+            AND (devoirs.pj = pj.id)
     """,
-    [id_classe])
+    [id_classe, id_classe])
     devoirs = c.fetchall()
+    print(devoirs)
     return jsonify(devoirs), 200
 
 def is_connected(args):

@@ -21,6 +21,7 @@ for classe in classes:
 c.execute('DROP TABLE IF EXISTS devoirs')
 c.execute("""
     CREATE TABLE devoirs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         enonce TEXT,
         classe INT,
         matiere TEXT,
