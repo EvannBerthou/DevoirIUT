@@ -12,57 +12,58 @@ def ajouter_devoir(args, files):
     c = db.cursor()
     enonce,matiere,prof = args["enonce"],args["matiere"],args["prof"]
 
-    blob = ''
-    filename = ''
-    file_path = ''
-    if files:
-        filename = safe_name(next(iter(files.to_dict())))
+    pjs = []
+    print(files)
+    for filename, file in files.items():
         if filename != '':
-            pj = files[filename]
-            file_path = os.path.join('src', filename)
-            pj.save(file_path)
-            with open(file_path, 'rb') as f:
-                blob = f.read()
+            blob = file.stream.read()
+            pjs.append((filename, blob))
 
     classes = args.getlist('classe')
-    last_id = None
-    if blob != '':
-        c.execute("INSERT INTO pj (nom, contenue) VALUES (?, ?);", [filename, blob])
-        last_id = (c.execute("SELECT id FROM pj WHERE id=(SELECT MAX(id) FROM pj);").fetchone()[0])
-
     for classe in classes:
         c.execute("""
-            INSERT INTO devoirs (enonce,matiere, prof, pj, classe)
-            VALUES (?, ?, ?, ?, 
+            INSERT INTO devoirs (enonce,matiere, prof, classe)
+            VALUES (?, ?, ?, 
                 (SELECT id FROM classes WHERE nom = ?));
         """,
-        [enonce,matiere,prof,last_id,classe])
+        [enonce,matiere,prof,classe])
+
+        last_id = (c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0])
+
+        for filename, blob in pjs:
+            c.execute("INSERT INTO pj (devoir_id, nom, contenue) VALUES (?, ?, ?);", [last_id, filename, blob])
 
     db.commit()
-    if blob != '':
-        os.remove(file_path)
     return jsonify({}), 200
 
 def liste_devoirs(id_classe):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     rows = c.execute("""
-        SELECT enonce, matiere, prof, jour, 0, 0,
+        SELECT devoirs.id, enonce, matiere, prof, jour, pj.id, nom,
         REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM devoirs
-        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
-            AND (devoirs.pj IS NULL)
-        UNION
-        SELECT enonce, matiere, prof, jour, pj.id, pj.nom,
-        REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM devoirs, pj
-        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
-            AND (devoirs.pj = pj.id)
+        FROM devoirs LEFT JOIN pj ON pj.devoir_id = devoirs.id
+        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
     """,
-    [id_classe, id_classe])
+    [id_classe])
     devoirs = c.fetchall()
-    print(devoirs)
-    return jsonify(devoirs), 200
+
+    s = {}
+    parsed = []
+    for row in devoirs:
+        devoir_id = row[0]
+        if not devoir_id in s: # Si c'est la première fois qu'on rencontre un devoir avec cet id
+            s[row[0]] = index = len(parsed) # Ajout l'id aux ids visités
+            parsed.append(list(row[1:5])) # Ajout les premières valeurs
+            parsed[index].append([]) # Liste pour les ids 
+            parsed[index].append([]) # Liste pour les noms
+            parsed[index].extend(row[7:]) # Reste des élements
+
+
+        index = s[devoir_id]
+        parsed[index][4].append(row[5])
+        parsed[index][5].append(row[6])
+    return jsonify(parsed), 200
 
 def is_connected(args):
     db = sqlite3.connect('src/devoirs.db')
