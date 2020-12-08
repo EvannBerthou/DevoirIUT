@@ -21,11 +21,13 @@ table, th, td {
     <tr>
         {% for c in devoir %}
             {% if loop.index == 5 %}
-                {% if c %}
-                    <td> <a href="{{ url_for('pj', pj = c) }}"> {{ devoir[loop.index] }} </a> </td>
-                {% else %}
-                    <td> </td>
-                {% endif %}
+                <td>
+                    {% if not c[0] == None %}
+                        {% for pj in c %}
+                            <a href="{{ url_for('pj', pj = pj) }}"> {{ devoir[5][loop.index - 1] }} </a> </br>
+                        {% endfor %}
+                    {% endif %}
+                </td>
             {% elif loop.index == 6 %}
             {% else %}
                 <td> {{ c }} </td>
