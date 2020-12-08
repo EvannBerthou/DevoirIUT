@@ -20,15 +20,16 @@ table, th, td {
     {% for devoir in devoirs %}
     <tr>
         {% for c in devoir %}
-            {% if loop.index == 5 %}
-                {% if c %}
-                    <td> <a href="{{ url_for('pj', pj = c) }}"> PJ </a> </td>
+            <td>
+                {# L'index 5 correspond à l'index de la liste des pièces jointe #}
+                {% if loop.index == 5 %}
+                    {% for pj in c %}
+                        <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
+                    {% endfor %}
                 {% else %}
-                    <td> </td>
+                    {{ c }}
                 {% endif %}
-            {% else %}
-                <td> {{ c }} </td>
-            {% endif %}
+            </td>
         {% endfor %}
     </tr>
     {% endfor %}
