@@ -28,23 +28,21 @@ def nouveau_devoir():
         enonce = request.form['enonce']
         matiere=request.form['matiere']
         prof = request.form['prof']
-        pj = None # Pièce jointe
-        if 'file' in request.files:
-            file = request.files['file']
+        pj = []
+        for file in request.files.getlist('file'):
             if file.filename != '':
-                pj = file
-                pj.save(os.path.join('.', pj.filename))
+                pj.append(file)
+                file.save(os.path.join('.', file.filename))
 
         files = {}
-        if pj != None:
-            files[pj.filename] = open(pj.filename, 'rb')
+        for file in pj:
+            files[file.filename] = open(file.filename, 'rb').read()
 
         requests.post('http://localhost:5000/api/devoirs', 
             params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes},
             files=files
         )
         
-        if pj != None:
-            os.remove(pj.filename)
+        [os.remove(file.filename) for file in pj]
 
         return redirect('/')
