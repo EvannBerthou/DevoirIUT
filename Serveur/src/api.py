@@ -54,15 +54,16 @@ def liste_devoirs(id_classe):
         devoir_id = row[0]
         if not devoir_id in s: # Si c'est la première fois qu'on rencontre un devoir avec cet id
             s[row[0]] = index = len(parsed) # Ajout l'id aux ids visités
-            parsed.append(list(row[1:5])) # Ajout les premières valeurs
-            parsed[index].append([]) # Liste pour les ids 
-            parsed[index].append([]) # Liste pour les noms
-            parsed[index].extend(row[7:]) # Reste des élements
+            devoir = list(row[1:5]) + [[]] + list(row[7:])
+            parsed.append(devoir)
 
 
         index = s[devoir_id]
-        parsed[index][4].append(row[5])
-        parsed[index][5].append(row[6])
+        # S'il y a une pièce jointe
+        if row[5] != None:
+            # L'ajouter
+            parsed[index][4].append([row[5], row[6]])
+
     return jsonify(parsed), 200
 
 def is_connected(args):
