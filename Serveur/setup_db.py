@@ -8,46 +8,11 @@ classes = soup.find('select').text.strip().split('\n')[2:]
 
 db = sqlite3.connect('src/devoirs.db')
 c = db.cursor()
-
-c.execute('DROP TABLE IF EXISTS classes')
-c.execute('CREATE TABLE classes (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT NOT NULL);')
+sql_str = open('db.sql').read()
+c.executescript(sql_str)
 
 for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
-
-c.execute('DROP TABLE IF EXISTS devoirs')
-c.execute("""
-    CREATE TABLE devoirs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        enonce TEXT,
-        classe INT,
-        matiere TEXT,
-        prof INT,
-        jour date DEFAULT (date(datetime('now', '+1 day', 'localtime'))),
-        a_rendre INT DEFAULT 0,
-        FOREIGN KEY(classe) REFERENCES classes(id)
-    );
-""")
-
-c.execute('DROP TABLE IF EXISTS pj')
-c.execute("""CREATE TABLE pj (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        devoir_id INT,
-        nom TEXT NOT NULL,
-        contenue BLOB NOT NULL,
-        FOREIGN KEY (devoir_id) REFERENCES devoirs(id)
-    );
-""")
-
-
-c.execute('DROP TABLE IF EXISTS enseignant')
-c.execute("""
-    CREATE TABLE enseignant (
-    	nom TEXT,
-    	prenom TEXT,
-    	mail TEXT,
-    	pwd TEXT);
-""")
 
 c.execute("INSERT INTO enseignant VALUES ('Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
 
