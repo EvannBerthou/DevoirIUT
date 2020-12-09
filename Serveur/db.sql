@@ -1,5 +1,8 @@
 DROP TABLE IF EXISTS classes;
-CREATE TABLE classes (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT NOT NULL);
+CREATE TABLE classes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    nom TEXT NOT NULL
+);
 
 DROP TABLE IF EXISTS devoirs;
 CREATE TABLE devoirs (
@@ -13,7 +16,6 @@ CREATE TABLE devoirs (
     FOREIGN KEY(classe) REFERENCES classes(id)
 );
 
-
 DROP TABLE IF EXISTS pj;
 CREATE TABLE pj (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +23,14 @@ CREATE TABLE pj (
     nom TEXT NOT NULL,
     contenue BLOB NOT NULL,
     FOREIGN KEY (devoir_id) REFERENCES devoirs(id)
+);
+
+DROP TABLE IF EXISTS devoir_pj;
+CREATE TABLE devoir_pj (
+    devoir_id INTEGER,
+    pj_id INTEGER,
+    FOREIGN KEY (devoir_id) REFERENCES devoirs(id),
+    FOREIGN KEY (pj_id)     REFERENCES pj(id)
 );
 
 DROP TABLE IF EXISTS enseignant;
