@@ -13,12 +13,17 @@ def ajouter_devoir(args, files):
     enonce,matiere,prof = args["enonce"],args["matiere"],args["prof"]
 
     pjs = []
-    print(files)
     for filename, file in files.items():
         if filename != '':
             blob = file.stream.read()
             pjs.append((filename, blob))
+    
+    pj_ids = []
+    for filename, blob in pjs:
+        c.execute("INSERT INTO pj (nom, contenue) VALUES (?, ?);", [filename, blob])
+        pj_ids.append(c.execute("SELECT id FROM pj WHERE id=(SELECT MAX(id) FROM pj);").fetchone()[0])
 
+    devoirs_ids = []
     classes = args.getlist('classe')
     for classe in classes:
         c.execute("""
@@ -27,12 +32,12 @@ def ajouter_devoir(args, files):
                 (SELECT id FROM classes WHERE nom = ?));
         """,
         [enonce,matiere,prof,classe])
+        devoirs_ids.append(c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0])
 
-        last_id = (c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0])
-
-        for filename, blob in pjs:
-            c.execute("INSERT INTO pj (devoir_id, nom, contenue) VALUES (?, ?, ?);", [last_id, filename, blob])
-
+    for d_id in devoirs_ids:
+        for pj_id in pj_ids:
+            c.execute("INSERT INTO devoir_pj (devoir_id, pj_id) VALUES (?, ?);", [d_id, pj_id])
+        
     db.commit()
     return jsonify({}), 200
 
@@ -40,10 +45,13 @@ def liste_devoirs(id_classe):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     rows = c.execute("""
-        SELECT devoirs.id, enonce, matiere, prof, jour, pj.id, nom,
-        REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM devoirs LEFT JOIN pj ON pj.devoir_id = devoirs.id
-        WHERE devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
+        SELECT 
+            devoirs.id, enonce, matiere, prof, jour, pj.id, pj.nom,
+            REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+        FROM devoirs, pj 
+            LEFT JOIN devoir_pj ON (devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id)
+        WHERE 
+            devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
     """,
     [id_classe])
     devoirs = c.fetchall()
