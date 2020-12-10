@@ -1,36 +1,63 @@
-<!doctype HTML>
-<style>
-table, th, td {
-    border: 1px solid black;
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='devoirs.css') }}">
+    <title>Excalynote</title>
+</head>
 
-</style>
+<body>
 
-<h1> {{ classe }} </h1>
+    <div id="header">
+        <a id="logo" href="https://moodle.uvsq.fr/moodle2021/my/">
+            <img src="{{ url_for('static', filename='logo-iut.png') }}" alt="Moodle"> 
+        </a> 
+    </div>
 
-<table>
-    <tr>
-        <th> Enonce </th>
-        <th> Matiere </th>
-        <th> Prof </th>
-        <th> Date </th>
-        <th> Pièce jointe </th>
-        <th> A rendre </th>
-    </tr>
-    {% for devoir in devoirs %}
-    <tr>
-        {% for c in devoir %}
-            <td>
-                {# L'index 5 correspond à l'index de la liste des pièces jointe #}
-                {% if loop.index == 5 %}
-                    {% for pj in c %}
-                        <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
-                    {% endfor %}
-                {% else %}
-                    {{ c }}
-                {% endif %}
-            </td>
+    <form action="/classe">
+        <strong><u>Choisir sa classe</u></strong>
+        <select name="classe" onchange="this.form.submit()">
+            <option> Choisir la classe </option>
+            {% for option in classes %}
+                <option value={{ option }}> {{ option }} </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div id="classe">
+        <strong>
+            <u> Devoirs de la {{ classe }} </u>
+        </strong>
+    </div>
+    <table id="devoirs">
+        <tr>
+            <th class="gauche"></th>
+            <th>Énoncé :</td>
+            <th>Matière :</td>
+            <th>Prof :</td>
+            <th>Date :</td>
+            <th>Pièce jointe :</td>
+            <th>À rendre :</td>
+        </tr>
+
+        {% for devoir in devoirs %}
+            <tr>
+			<th class="gauche"> {{ loop.index }} </th>
+                {% for c in devoir %}
+                    <td>
+                        {# L'index 5 correspond à l'index de la liste des pièces jointe #}
+                        {% if loop.index == 5 %}
+                            {% for pj in c %}
+                                <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
+                            {% endfor %}
+                        {% else %}
+                            {{ c }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
         {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
+    </table>
+    <div id="signaler"><u>Signaler bug/envoyer un commentaire</u></div>
+</body>
+</html>

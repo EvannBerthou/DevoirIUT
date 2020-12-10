@@ -9,10 +9,11 @@ def devoir_classe():
         return redirect('/')
 
     classe = request.args['classe']
+    classes = liste_classes()
     devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'classe': classe})
     if devoirs_r.status_code == 200:
         devoirs = json.loads(devoirs_r.content)
-        return render_template('devoirs.html', devoirs=devoirs, classe=classe)
+        return render_template('devoirs.html', devoirs=devoirs, classes=classes, classe=classe)
     else:
         return '<h1> Erreur </h1>'
 

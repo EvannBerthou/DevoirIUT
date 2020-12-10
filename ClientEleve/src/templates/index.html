@@ -1,12 +1,28 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='excali.css') }}">
+    <title>Excalynote</title>
+</head>
 
-<form action="/classe">
-    <select name="classe">
-        {% for option in classes %}
-            <option value={{ option }}> {{ option }} </option>
-        {% endfor %}
-    </select>
-    <button type="submit"> Get </button>
-</form>
-<a href=" /connexion"> Connexion </a>
-<!--<a href="/nouveau"> Nouveau devoir </a>-->
+<body>
+    <div id="header">
+        <a id="logo" href="https://moodle.uvsq.fr/moodle2021/my/">
+            <img src="{{ url_for('static', filename='logo-iut.png') }}" alt="Moodle"> 
+        </a> 
+    </div>
+    <h1><strong><u> Excalynote </u></strong></h1>
+    <h2>Bouton accès au site</h2>
+    <form action="/classe">
+        <strong><u>Choisir sa classe</u></strong>
+        <select name="classe" onchange="this.form.submit()">
+            <option> Choisir la classe </option>
+            {% for option in classes %}
+                <option value={{ option }}> {{ option }} </option>
+            {% endfor %}
+        </select>
+    </form>
+    <div id="signaler"><u>Signaler bug/envoyer un commentaire</u></div>
+</body>
+</html>
