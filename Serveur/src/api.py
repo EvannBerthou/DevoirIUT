@@ -46,14 +46,24 @@ def liste_devoirs(id_classe):
     c = db.cursor()
     rows = c.execute("""
         SELECT 
+            devoirs.id, enonce, matiere, prof, jour, null, null,
+            REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+        FROM 
+            devoirs
+        WHERE 
+            devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
+            AND devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
+        UNION
+        SELECT 
             devoirs.id, enonce, matiere, prof, jour, pj.id, pj.nom,
             REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM devoirs, pj 
-            LEFT JOIN devoir_pj ON (devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id)
+        FROM
+            devoirs, pj, devoir_pj
         WHERE 
-            devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
+            devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
+            AND devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
     """,
-    [id_classe])
+    [id_classe, id_classe])
     devoirs = c.fetchall()
 
     s = {}
@@ -91,8 +101,6 @@ def is_connected(args):
             data = c.execute(" SELECT nom,prenom FROM enseignant WHERE mail==?;",[email_entrer])
             return jsonify([dat for dat in data]),200
     return jsonify({}), 200
-
-
 
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
