@@ -11,6 +11,7 @@ def ajouter_devoir(args, files):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce,matiere,prof = args["enonce"],args["matiere"],args["prof"]
+    date = args['date'] if args['date'] else None
 
     pjs = []
     for filename, file in files.items():
@@ -22,11 +23,14 @@ def ajouter_devoir(args, files):
     for filename, blob in pjs:
         c.execute("INSERT INTO pj (nom, contenue) VALUES (?, ?);", [filename, blob])
         pj_ids.append(c.execute("SELECT id FROM pj WHERE id=(SELECT MAX(id) FROM pj);").fetchone()[0])
-
+    print(date)
     classes = args.getlist('classe')
-    c.execute("INSERT INTO devoirs (enonce,matiere,prof) VALUES (?, ?, ?);", [enonce,matiere,prof])
+    c.execute("""
+        INSERT INTO devoirs (enonce,matiere,prof,jour) VALUES (?, ?, ?, 
+            IFNULL(?, (date(datetime('now', '+7 day', 'localtime')))));
+    """, 
+    [enonce,matiere,prof,date])
     devoir_id = c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0]
-    print(devoir_id)
 
     for classe in classes:
         c.execute("""

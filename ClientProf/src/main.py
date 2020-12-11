@@ -28,6 +28,7 @@ def nouveau_devoir():
         enonce = request.form['enonce']
         matiere=request.form['matiere']
         prof = request.form['prof']
+        date = request.form['date']
         pj = []
         for file in request.files.getlist('file'):
             if file.filename != '':
@@ -39,7 +40,7 @@ def nouveau_devoir():
             files[file.filename] = open(file.filename, 'rb').read()
 
         requests.post('http://localhost:5000/api/devoirs', 
-            params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes},
+            params={'enonce': enonce,'matiere':matiere, 'prof': prof, 'classe': classes, 'date': date},
             files=files
         )
         
