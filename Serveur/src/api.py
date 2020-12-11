@@ -23,20 +23,20 @@ def ajouter_devoir(args, files):
         c.execute("INSERT INTO pj (nom, contenue) VALUES (?, ?);", [filename, blob])
         pj_ids.append(c.execute("SELECT id FROM pj WHERE id=(SELECT MAX(id) FROM pj);").fetchone()[0])
 
-    devoirs_ids = []
     classes = args.getlist('classe')
+    c.execute("INSERT INTO devoirs (enonce,matiere,prof) VALUES (?, ?, ?);", [enonce,matiere,prof])
+    devoir_id = c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0]
+    print(devoir_id)
+
     for classe in classes:
         c.execute("""
-            INSERT INTO devoirs (enonce,matiere, prof, classe)
-            VALUES (?, ?, ?, 
-                (SELECT id FROM classes WHERE nom = ?));
+            INSERT INTO devoir_classe (devoir_id, classe_id) 
+            VALUES (?, (SELECT id FROM classes WHERE nom = ?));
         """,
-        [enonce,matiere,prof,classe])
-        devoirs_ids.append(c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0])
+        [devoir_id, classe])
 
-    for d_id in devoirs_ids:
-        for pj_id in pj_ids:
-            c.execute("INSERT INTO devoir_pj (devoir_id, pj_id) VALUES (?, ?);", [d_id, pj_id])
+    for pj_id in pj_ids:
+        c.execute("INSERT INTO devoir_pj (devoir_id, pj_id) VALUES (?, ?);", [devoir_id, pj_id])
         
     db.commit()
     return jsonify({}), 200
@@ -52,7 +52,10 @@ def liste_devoirs(id_classe):
             devoirs
         WHERE 
             devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
-            AND devoirs.classe = (SELECT id FROM classes WHERE nom = ?)
+            AND devoirs.id IN
+                (SELECT devoir_id FROM devoir_classe, classes
+                    WHERE classe_id = classes.id
+                        AND classes.nom = ?)
         UNION
         SELECT 
             devoirs.id, enonce, matiere, prof, jour, pj.id, pj.nom,
@@ -61,10 +64,16 @@ def liste_devoirs(id_classe):
             devoirs, pj, devoir_pj
         WHERE 
             devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
-            AND devoirs.classe = (SELECT id FROM classes WHERE nom = ?);
+            AND devoirs.id IN
+                (SELECT devoir_id FROM devoir_classe, classes
+                    WHERE classe_id = classes.id
+                        AND classes.nom = ?);
     """,
     [id_classe, id_classe])
     devoirs = c.fetchall()
+
+
+    #AND devoirs.id = (SELECT devoir_id FROM devoir_classe WHERE classe_id = ?);
 
     s = {}
     parsed = []
