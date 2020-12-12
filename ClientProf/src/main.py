@@ -40,3 +40,7 @@ def nouveau_devoir():
         )
         
         return redirect('/')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
