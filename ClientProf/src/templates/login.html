@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <title>Excalynote - connexion</title>
+</head>
+
+<body>
+	<div id="header">
+		<a id="logo" href="chépaoù">
+			<img src="https://cas2.uvsq.fr/images/uvsq-logo-blanc.png" alt="Moodle">
+		</a>
+	</div>
+	
+	<div id="centre">
+		<h1>Excalinote</h1> 
+		<h2>Connexion enseignant</h2><br>
+		
+		<div class="group">
+			<input type="text" name="username" size="40" autocomplete="off" required>
+			<label for="username">
+				<b>Identifiant : </b>
+			</label>
+		</div><br>
+		
+		<div class="group">
+			<input type="password" name="pwd" size="40" required>
+			<label for="pwd">
+				<b>Mot de passe : </b>
+			</label><br>
+		</div>
+		
+		<a href="" class="button">
+			<b>Se connecter</b>
+		</a>
+	</div>
+</body>
+</html>
