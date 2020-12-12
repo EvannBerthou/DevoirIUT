@@ -1,5 +1,5 @@
-import requests, json, re, os
-from flask import Flask, request, render_template, redirect, send_from_directory
+import requests, json, re, os, io
+from flask import Flask, request, render_template, redirect, send_from_directory, send_file
 
 app = Flask(__name__, template_folder='templates')
 
@@ -20,8 +20,7 @@ def devoir_classe():
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
     if classes_r.status_code == 200:
-        classes = [''.join(classe) for classe in json.loads(classes_r.content)]
-        return classes
+        return [''.join(classe) for classe in json.loads(classes_r.content)]
     return None
 
 @app.route('/', methods=['GET'])
@@ -38,15 +37,8 @@ def pj():
     pj_r = requests.get('http://localhost:5000/api/pj', params={'id': request.args['pj']})
     # Récupère le nom dans le headers
     filename = re.findall("filename=(.+)", pj_r.headers['content-disposition'])[0].replace('"', '')
-    # send_from_directory a besoin d'un chemin de fichier, on doit donc écrire le fichier
-    # avant de l'envoyer puis le supprimer
-    path = os.path.join('src', filename)
-    open(path, 'wb').write(pj_r.content)
     # as_attachment signifie que le navigateur va télécharger le fichier au lieu d'essayer de l'afficher
-    res = send_from_directory(directory='.', filename=filename, 
-        as_attachment=True, cache_timeout=0)
-    os.remove(path)
-    return res, 200
+    return send_file(io.BytesIO(pj_r.content), as_attachment=True, attachment_filename=filename), 200
 
 @app.route('/connexion',methods=['GET', 'POST'])
 def connexion():
@@ -54,11 +46,10 @@ def connexion():
         return render_template('connexion.html', Erreur=False)
     
     elif request.method == 'POST':
-        email = request.form['email']
-        pwd=request.form['pwd']
+        email, pwd = request.form['email'], request.form['pwd']
 
-        connect_data= requests.get('http://localhost:5000/api/connexion', params={'email': email,'pwd':pwd})
-        connect_data=json.loads(connect_data.content)
+        connect_data = requests.get('http://localhost:5000/api/connexion', params={'email': email,'pwd':pwd})
+        connect_data = json.loads(connect_data.content)
         #  recuperation des donne de la personne conecteé nom , prenom 
         if connect_data:
             return redirect('/')
