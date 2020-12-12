@@ -40,18 +40,3 @@ def pj():
     # as_attachment signifie que le navigateur va télécharger le fichier au lieu d'essayer de l'afficher
     return send_file(io.BytesIO(pj_r.content), as_attachment=True, attachment_filename=filename), 200
 
-@app.route('/connexion',methods=['GET', 'POST'])
-def connexion():
-    if request.method=='GET':
-        return render_template('connexion.html', Erreur=False)
-    
-    elif request.method == 'POST':
-        email, pwd = request.form['email'], request.form['pwd']
-
-        connect_data = requests.get('http://localhost:5000/api/connexion', params={'email': email,'pwd':pwd})
-        connect_data = json.loads(connect_data.content)
-        #  recuperation des donne de la personne conecteé nom , prenom 
-        if connect_data:
-            return redirect('/')
-        else:
-            return render_template('connexion.html', Erreur=True)
