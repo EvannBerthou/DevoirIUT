@@ -1,5 +1,5 @@
-import sqlite3, os, re
-from flask import Blueprint, request, jsonify, send_from_directory
+import sqlite3, os, io
+from flask import Blueprint, request, jsonify, send_from_directory, send_file
 
 api = Blueprint('api', __name__)
 
@@ -10,21 +10,17 @@ def safe_name(name):
 def ajouter_devoir(args, files):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    enonce,matiere,prof = args["enonce"],args["matiere"],args["prof"]
+    enonce, matiere, prof = args["enonce"], args["matiere"], args["prof"]
     date = args['date'] if args['date'] else None
 
-    pjs = []
-    for filename, file in files.items():
-        if filename != '':
-            blob = file.stream.read()
-            pjs.append((filename, blob))
+    # Récupère le nom et le contenue des fichiers ssi il y a des fichiers
+    pjs = [(fn, f.stream.read()) for fn, f in files.items() if fn != '']
     
     pj_ids = []
     for filename, blob in pjs:
         c.execute("INSERT INTO pj (nom, contenue) VALUES (?, ?);", [filename, blob])
         pj_ids.append(c.execute("SELECT id FROM pj WHERE id=(SELECT MAX(id) FROM pj);").fetchone()[0])
-    print(date)
-    classes = args.getlist('classe')
+
     c.execute("""
         INSERT INTO devoirs (enonce,matiere,prof,jour) VALUES (?, ?, ?, 
             IFNULL(?, (date(datetime('now', '+7 day', 'localtime')))));
@@ -32,9 +28,9 @@ def ajouter_devoir(args, files):
     [enonce,matiere,prof,date])
     devoir_id = c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0]
 
-    for classe in classes:
+    for classe in args.getlist('classe'):
         c.execute("""
-            INSERT INTO devoir_classe (devoir_id, classe_id) 
+            INSERT INTO devoir_classe 
             VALUES (?, (SELECT id FROM classes WHERE nom = ?));
         """,
         [devoir_id, classe])
@@ -48,71 +44,55 @@ def ajouter_devoir(args, files):
 def liste_devoirs(id_classe):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    rows = c.execute("""
-        SELECT 
-            devoirs.id, enonce, matiere, prof, jour, null, null,
-            REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM 
-            devoirs
-        WHERE 
-            devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
-            AND devoirs.id IN
-                (SELECT devoir_id FROM devoir_classe, classes
-                    WHERE classe_id = classes.id
-                        AND classes.nom = ?)
-        UNION
-        SELECT 
-            devoirs.id, enonce, matiere, prof, jour, pj.id, pj.nom,
-            REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-        FROM
-            devoirs, pj, devoir_pj
-        WHERE 
-            devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
-            AND devoirs.id IN
-                (SELECT devoir_id FROM devoir_classe, classes
-                    WHERE classe_id = classes.id
-                        AND classes.nom = ?);
+    devoirs = c.execute("""
+        SELECT * FROM (
+            SELECT 
+                devoirs.id as did, enonce, matiere, prof, jour, null, null,
+                REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+            FROM 
+                devoirs
+            WHERE 
+                devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
+            UNION
+            SELECT 
+                devoirs.id as did, enonce, matiere, prof, jour, pj.id, pj.nom,
+                REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+            FROM
+                devoirs, pj, devoir_pj
+            WHERE 
+                devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
+       ) 
+       WHERE 
+           did IN (SELECT devoir_id FROM devoir_classe, classes
+                          WHERE classe_id = classes.id AND classes.nom = ?);
     """,
-    [id_classe, id_classe])
-    devoirs = c.fetchall()
+    [id_classe]).fetchall()
 
-
-    #AND devoirs.id = (SELECT devoir_id FROM devoir_classe WHERE classe_id = ?);
-
-    s = {}
-    parsed = []
+    # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
+    parsed = {}
     for row in devoirs:
         devoir_id = row[0]
-        if not devoir_id in s: # Si c'est la première fois qu'on rencontre un devoir avec cet id
-            s[row[0]] = index = len(parsed) # Ajout l'id aux ids visités
-            devoir = list(row[1:5]) + [[]] + list(row[7:])
-            parsed.append(devoir)
+        if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
+            parsed[devoir_id] = list(row[1:5]) + [[]] + list(row[7:])
 
-
-        index = s[devoir_id]
         # S'il y a une pièce jointe
-        if row[5] != None:
-            # L'ajouter
-            parsed[index][4].append([row[5], row[6]])
+        if row[5]:
+            parsed[devoir_id][4].append((row[5], row[6]))
 
-    return jsonify(parsed), 200
+    return jsonify(list(parsed.values())), 200
 
 def is_connected(args):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    pwd_entrer,email_entrer=args["pwd"],args['email']
-    pwd=c.execute("""
-        SELECT pwd 
-        FROM enseignant
-        WHERE mail=? ;
-        """,
-    [email_entrer])
-    pwd=[pw for pw in pwd]
+
+    pwd_entrer,email_entrer = args["pwd"], args['email']
+    pwd = c.execute("SELECT pwd FROM enseignant WHERE mail=?;", [email_entrer]).fetchall()
+
     if pwd:
-        pwd=pwd[0][0]
-        if pwd == pwd_entrer:
-            data = c.execute(" SELECT nom,prenom FROM enseignant WHERE mail==?;",[email_entrer])
-            return jsonify([dat for dat in data]),200
+        if pwd[0][0] == pwd_entrer:
+            data = c.execute("SELECT nom, prenom FROM enseignant WHERE mail=?;",[email_entrer]).fetchall()
+            return jsonify(data),200
+
     return jsonify({}), 200
 
 @api.route('/devoirs', methods=['GET', 'POST'])
@@ -131,27 +111,21 @@ def connect():
 def classes():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    rows = c.execute("""
-        SELECT nom FROM classes;
-    """)
-    classes = [row for row in rows]
+    classes = c.execute("SELECT nom FROM classes;").fetchall()
     return jsonify(classes), 200
 
 @api.route('/pj', methods=['GET'])
 def pj():
-    pj_id = request.args['id']
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    rows = c.execute("""
-        SELECT nom, contenue FROM pj WHERE id = ?;
-    """,
-    [pj_id])
-    pj = c.fetchone()
-    path = os.path.join('src', 'temp')
-    open(path, 'wb').write(pj[1])
-    c = open(path, 'rb').read()
-
-    res = send_from_directory(directory='.', filename='temp', 
-        as_attachment=True, attachment_filename=safe_name(pj[0]))
-    os.remove(path)
-    return res
+    f = c.execute("SELECT nom, contenue FROM pj WHERE id = ?;", [request.args['id']]).fetchone()
+    # Si aucun fichier n'a été trouvé dans la base de donné
+    if f == None:
+        # Message d'erreur
+        return None, 404
+    
+    # io.BytesIO permet de créer une sorte de fichier mais uniquement dans la RAM (au lieu d'écrire
+    # dans un fichier puis de le lire comme on faisait avant, cela permet un gain de performance
+    # énorme car cela évite de devoir faire un écrire puis lecture du fichier sur le disque dur
+    res = send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0]))
+    return res, 200
