@@ -15,6 +15,7 @@ for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
 
 c.execute("INSERT INTO enseignant VALUES ('Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
+c.execute("INSERT INTO enseignant VALUES ('a','a','a','C'); ")
 
 c.close()
 db.commit()
