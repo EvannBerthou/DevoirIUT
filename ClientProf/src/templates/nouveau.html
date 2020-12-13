@@ -37,36 +37,39 @@
 }
 </style>
 
-<form action="/nouveau" method="POST" enctype="multipart/form-data">
-    <label> Enonce </label></br>
-    <textarea name="enonce"></textarea>
+<body>
+    <h2> Bienvenue {{ user.id }} </h2>
+    <form action="/nouveau" method="POST" enctype="multipart/form-data">
+        <label> Enonce </label></br>
+        <textarea name="enonce"></textarea>
 
-    <label> Matère </label> </br>
-    <textarea name="matiere"></textarea>
+        <label> Matère </label> </br>
+        <textarea name="matiere"></textarea>
 
-    <label> Prof </label> </br>
-    <input type="number" name="prof"></input>
+        <label> Prof </label> </br>
+        <input type="number" name="prof"></input>
 
-    <label> Fichier </label>
-    <input type="file" multiple name="file">
+        <label> Fichier </label>
+        <input type="file" multiple name="file">
 
-    <div class="multiselect">
-        <div class="selectBox" onclick="afficherClasses()">
-            <select>
-                <option> Choix des classes </option>
-            </select>
-            <div class="overSelect"></div>
+        <div class="multiselect">
+            <div class="selectBox" onclick="afficherClasses()">
+                <select>
+                    <option> Choix des classes </option>
+                </select>
+                <div class="overSelect"></div>
+            </div>
+            <div id="classes">
+                {% for option in classes %}
+                    <label for="{{ option }}">
+                        <input type="checkbox" name="{{ option }}" />
+                        {{ option }} 
+                    </label>
+                {% endfor %}
+            </div>
         </div>
-        <div id="classes">
-            {% for option in classes %}
-                <label for="{{ option }}">
-                    <input type="checkbox" name="{{ option }}" />
-                    {{ option }} 
-                </label>
-            {% endfor %}
-        </div>
-    </div>
 
-    <input type="date" name="date">
-    <button type="submit"> Ok </button>
-</form>
+        <input type="date" name="date">
+        <button type="submit"> Ok </button>
+    </form>
+</body>

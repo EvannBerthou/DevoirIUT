@@ -81,19 +81,23 @@ def liste_devoirs(id_classe):
 
     return jsonify(list(parsed.values())), 200
 
-def is_connected(args):
+@api.route('/login', methods=['GET'])
+def login():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
 
-    pwd_entrer,email_entrer = args["pwd"], args['email']
-    pwd = c.execute("SELECT pwd FROM enseignant WHERE mail=?;", [email_entrer]).fetchall()
+    pwd, email_entrer = request.args["pwd"], request.args['email']
+    user_found = c.execute('SELECT 1 FROM enseignant WHERE mail = ? AND pwd = ?', 
+        [email_entrer, pwd]).fetchone()
+    return '', 404 if user_found == None else 200
 
-    if pwd:
-        if pwd[0][0] == pwd_entrer:
-            data = c.execute("SELECT nom, prenom FROM enseignant WHERE mail=?;",[email_entrer]).fetchall()
-            return jsonify(data),200
-
-    return jsonify({}), 200
+@api.route('/user', methods=['GET'])
+def user():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    email = request.args['email']
+    user_found = c.execute('SELECT 1 FROM enseignant WHERE mail = ?', [email]).fetchone()
+    return '', 404 if user_found == None else 200
 
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
@@ -101,11 +105,6 @@ def devoirs():
         return ajouter_devoir(request.args, request.files)
     elif request.method == 'GET':
         return liste_devoirs(request.args['classe'])
-
-
-@api.route('/connexion')
-def connect():
-    return is_connected(request.args)
 
 @api.route('/classe', methods=['GET'])
 def classes():
