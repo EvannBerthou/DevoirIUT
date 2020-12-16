@@ -1,5 +1,6 @@
 import sqlite3, os, io
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
 
 api = Blueprint('api', __name__)
 
@@ -81,19 +82,24 @@ def liste_devoirs(id_classe):
 
     return jsonify(list(parsed.values())), 200
 
-def is_connected(args):
+@api.route('/login', methods=['GET'])
+def login():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
 
-    pwd_entrer,email_entrer = args["pwd"], args['email']
-    pwd = c.execute("SELECT pwd FROM enseignant WHERE mail=?;", [email_entrer]).fetchall()
+    pwd, email_entrer = request.args['pwd'], request.args['email']
+    pass_found = c.execute('SELECT pwd FROM enseignant WHERE mail = ?;', [email_entrer]).fetchone()
+    if pass_found and check_password_hash(pass_found[0], pwd):
+        return '', 200
+    return '', 404
 
-    if pwd:
-        if pwd[0][0] == pwd_entrer:
-            data = c.execute("SELECT nom, prenom FROM enseignant WHERE mail=?;",[email_entrer]).fetchall()
-            return jsonify(data),200
-
-    return jsonify({}), 200
+@api.route('/user', methods=['GET'])
+def user():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    email = request.args['email']
+    user_found = c.execute('SELECT 1 FROM enseignant WHERE mail = ?', [email]).fetchone()
+    return '', 404 if user_found == None else 200
 
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
@@ -101,11 +107,6 @@ def devoirs():
         return ajouter_devoir(request.args, request.files)
     elif request.method == 'GET':
         return liste_devoirs(request.args['classe'])
-
-
-@api.route('/connexion')
-def connect():
-    return is_connected(request.args)
 
 @api.route('/classe', methods=['GET'])
 def classes():
