@@ -41,8 +41,8 @@ CREATE TABLE devoir_classe (
 
 DROP TABLE IF EXISTS enseignant;
 CREATE TABLE enseignant (
-    nom TEXT,
-    prenom TEXT,
-    mail TEXT,
-    pwd TEXT
+    nom TEXT NOT NULL,
+    prenom TEXT NOT NULL,
+    mail TEXT NOT NULL,
+    pwd TEXT NOT NULL
 );

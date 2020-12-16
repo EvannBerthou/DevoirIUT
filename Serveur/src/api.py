@@ -1,5 +1,6 @@
 import sqlite3, os, io
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
 
 api = Blueprint('api', __name__)
 
@@ -86,10 +87,11 @@ def login():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
 
-    pwd, email_entrer = request.args["pwd"], request.args['email']
-    user_found = c.execute('SELECT 1 FROM enseignant WHERE mail = ? AND pwd = ?', 
-        [email_entrer, pwd]).fetchone()
-    return '', 404 if user_found == None else 200
+    pwd, email_entrer = request.args['pwd'], request.args['email']
+    pass_found = c.execute('SELECT pwd FROM enseignant WHERE mail = ?;', [email_entrer]).fetchone()
+    if pass_found and check_password_hash(pass_found[0], pwd):
+        return '', 200
+    return '', 404
 
 @api.route('/user', methods=['GET'])
 def user():
