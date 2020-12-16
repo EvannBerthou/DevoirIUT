@@ -115,6 +115,23 @@ def classes():
     classes = c.execute("SELECT nom FROM classes;").fetchall()
     return jsonify(classes), 200
 
+@api.route('/matieres', methods=['GET'])
+def matieres():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    enseignant = request.args['enseignant']
+    if not enseignant:
+        return None, 404
+
+    matieres = c.execute("""
+        SELECT nom FROM matiere
+        WHERE id IN
+            (SELECT matiere_id FROM matiere_enseignant
+                WHERE enseignant_id = (SELECT enseignant_id FROM enseignant WHERE nom = ?));
+    """, 
+    [enseignant]).fetchall()
+    return jsonify(matieres), 200
+
 @api.route('/pj', methods=['GET'])
 def pj():
     db = sqlite3.connect('src/devoirs.db')
