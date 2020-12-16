@@ -8,10 +8,12 @@ DROP TABLE IF EXISTS devoirs;
 CREATE TABLE devoirs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     enonce TEXT,
-    matiere TEXT,
-    prof INT,
-    jour date DEFAULT (date(datetime('now', '+1 day', 'localtime'))),
-    a_rendre INT DEFAULT 0
+    matiere INTEGER,
+    prof INTEGER,
+    jour date,
+    a_rendre INT DEFAULT 0,
+    FOREIGN KEY (matiere) REFERENCES matiere(id),
+    FOREIGN KEY (prof) REFERENCES enseignant(id)
 );
 
 DROP TABLE IF EXISTS pj;
@@ -41,8 +43,25 @@ CREATE TABLE devoir_classe (
 
 DROP TABLE IF EXISTS enseignant;
 CREATE TABLE enseignant (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     nom TEXT NOT NULL,
     prenom TEXT NOT NULL,
     mail TEXT NOT NULL,
     pwd TEXT NOT NULL
 );
+
+DROP TABLE IF EXISTS matiere;
+CREATE TABLE matiere (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom TEXT NOT NULL
+);
+
+DROP TABLE IF EXISTS matiere_enseignant;
+CREATE TABLE matiere_enseignant (
+    enseignant_id INTEGER,
+    matiere_id INTEGER,
+    FOREIGN KEY (enseignant_id) REFERENCES enseignant(id),
+    FOREIGN KEY (matiere_id) REFERENCES matiere(id)
+);
+
+INSERT INTO matiere (nom) VALUES ('prog'), ('algo');

@@ -40,17 +40,25 @@
 <body>
     <h2> Bienvenue {{ user.id }} </h2>
     <form action="/nouveau" method="POST" enctype="multipart/form-data">
-        <label> Enonce </label></br>
+        <label> Enonce </label> <br>
         <textarea name="enonce"></textarea>
 
-        <label> Matère </label> </br>
-        <textarea name="matiere"></textarea>
+        <br>
 
-        <label> Prof </label> </br>
-        <input type="number" name="prof"></input>
+        <label> Matière </label>  <br>
+        <select name="matiere">
+            {% for matiere in matieres %}
+                <option value={{ matiere }}> {{ matiere }} </option>
+            {% endfor %}
+        </select>
 
-        <label> Fichier </label>
+        <br>
+
+        <label> Fichier </label> <br>
         <input type="file" multiple name="file">
+
+        <br>
+        <br>
 
         <div class="multiselect">
             <div class="selectBox" onclick="afficherClasses()">
@@ -69,7 +77,12 @@
             </div>
         </div>
 
+        <br>
+
         <input type="date" name="date">
+
+        <br>
+
         <button type="submit"> Ok </button>
     </form>
 </body>
