@@ -8,12 +8,20 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 class User(flask_login.UserMixin):
+# TODO: Ajouter des infos tels que le nom au lieu de mettre le nom directement dans l'id
     pass
 
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
     if classes_r.status_code == 200:
         return [''.join(classe) for classe in json.loads(classes_r.content)]
+    return None
+
+def liste_matires(enseignant):
+    matieres_r = requests.get('http://localhost:5000/api/matieres', 
+            params={'enseignant':enseignant})
+    if matieres_r.status_code == 200:
+        return [''.join(matiere) for matiere in json.loads(matieres_r.content)]
     return None
 
 @app.route('/')
@@ -25,8 +33,10 @@ def home():
 def nouveau_devoir():
     if request.method == 'GET':
         classes = liste_classes()
+        matieres = liste_matires(flask_login.current_user.id)
         if classes:
-            return render_template('nouveau.html', user = flask_login.current_user, classes=classes)
+            return render_template('nouveau.html', user = flask_login.current_user, 
+                classes=classes, matieres=matieres)
         else:
             return '<h1> Erreur </h1>'
 
@@ -34,7 +44,8 @@ def nouveau_devoir():
         classes = [key for key, val in request.form.items() if val == 'on']
         enonce = request.form['enonce']
         matiere = request.form['matiere']
-        prof = request.form['prof']
+        print(matiere)
+        prof = flask_login.current_user.id # nom du prof
         date = request.form['date']
 
         files = {}
