@@ -1,6 +1,7 @@
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
+from werkzeug.security import generate_password_hash
 
 html = requests.get('http://chronos.iut-velizy.uvsq.fr/EDT/gindex.html').content
 soup = BeautifulSoup(html, features='html.parser')
@@ -15,7 +16,9 @@ for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
 
 c.execute("INSERT INTO enseignant VALUES ('Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
-c.execute("INSERT INTO enseignant VALUES ('a','a','a','C'); ")
+pwd = generate_password_hash('C')
+print(generate_password_hash('C'))
+c.execute("INSERT INTO enseignant VALUES ('a','a','a', ?);", [pwd])
 
 c.close()
 db.commit()
