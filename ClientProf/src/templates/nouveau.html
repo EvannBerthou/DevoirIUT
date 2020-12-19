@@ -47,8 +47,10 @@
 
         <label> Matière </label>  <br>
         <select name="matiere">
+            <option value='algo'> algo </option>
             {% for matiere in matieres %}
                 <option value={{ matiere }}> {{ matiere }} </option>
+                
             {% endfor %}
         </select>
 
