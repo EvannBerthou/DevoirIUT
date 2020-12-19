@@ -42,52 +42,98 @@ def ajouter_devoir(args, files):
     db.commit()
     return jsonify({}), 200
 
-def liste_devoirs(id_classe):
+def liste_devoirs(args):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    devoirs = c.execute("""
-        SELECT * FROM (
-            SELECT 
-                devoirs.id as did, enonce, matiere, prof, jour, null, null,
-                REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-            FROM 
-                devoirs
-            WHERE 
-                devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
-            UNION
-            SELECT 
-                devoirs.id as did, enonce, matiere, prof, jour, pj.id, pj.nom,
-                REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
-            FROM
-                devoirs, pj, devoir_pj
-            WHERE 
-                devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
-       ) 
-       WHERE 
-           did IN (SELECT devoir_id FROM devoir_classe, classes
-                          WHERE classe_id = classes.id AND classes.nom = ?);
-    """,
-    [id_classe]).fetchall()
-
-    # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
     parsed = {}
-    for row in devoirs:
-        devoir_id = row[0]
-        if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
-            parsed[devoir_id] = list(row[1:5]) + [[]] + list(row[7:])
+    if 'classe' in args:
+        print('devoir classe')
+        devoirs = c.execute("""
+            SELECT * FROM (
+                SELECT 
+                    devoirs.id as did, enonce, matiere, prof, jour, null, null,
+                    REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+                FROM 
+                    devoirs
+                WHERE 
+                    devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
+                UNION
+                SELECT 
+                    devoirs.id as did, enonce, matiere, prof, jour, pj.id, pj.nom,
+                    REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+                FROM
+                    devoirs, pj, devoir_pj
+                WHERE 
+                    devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
+            ) 
+            WHERE 
+               did IN (SELECT devoir_id FROM devoir_classe, classes
+                              WHERE classe_id = classes.id AND classes.nom = ?);
+        """,
+        [args['classe']]).fetchall()
 
-        # S'il y a une pièce jointe
-        if row[5]:
-            parsed[devoir_id][4].append((row[5], row[6]))
+        # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
+        
+        for row in devoirs:
+            devoir_id = row[0]
+            if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
+                parsed[devoir_id] = list(row[1:5]) + [[]] + list(row[7:])
+                # S'il y a une pièce jointe
+            if row[5]:
+                parsed[devoir_id][4].append((row[5], row[6]))
+
+    elif 'user' in args:
+        print('devoir prof')
+        devoirs = c.execute("""
+            SELECT * 
+            FROM (
+                SELECT 
+                    devoirs.id as did, enonce, matiere, prof, jour, null, null,
+                    REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui')
+                FROM 
+                    devoirs
+                WHERE 
+                    devoirs.id NOT IN (SELECT devoir_id FROM devoir_pj)
+                UNION
+                SELECT 
+                    devoirs.id as did, enonce, matiere, prof, jour, pj.id, pj.nom,
+                    REPLACE(REPLACE(a_rendre, 0, 'Non'), 1, 'Oui') 
+                FROM
+                    devoirs, pj, devoir_pj
+                WHERE 
+                    devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
+           ) 
+           WHERE 
+               matiere IN (SELECT nom 
+                            FROM matiere 
+                            WHERE id 
+                            IN  (SELECT matiere_id 
+                                FROM matiere_enseignant 
+                                WHERE enseignant_id = (SELECT id 
+                                                        FROM enseignant 
+                                                        WHERE mail=? ))
+               );
+        """,
+        [args['user']]).fetchall()
+        for row in devoirs:
+            parsed[row[0]] = list(row[1:5]) + [[]] + list(row[7:])
+            # S'il y a une pièce jointe
+            if row[5]:
+                parsed[row[0]][4].append((row[5], row[6]))
+        print(parsed)
 
     return jsonify(list(parsed.values())), 200
+
+
+
+
 
 @api.route('/login', methods=['GET'])
 def login():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-
     pwd, email_entrer = request.args['pwd'], request.args['email']
+    print('bob',email_entrer,pwd)
     pass_found = c.execute('SELECT pwd FROM enseignant WHERE mail = ?;', [email_entrer]).fetchone()
     if pass_found and check_password_hash(pass_found[0], pwd):
         return '', 200
@@ -104,9 +150,12 @@ def user():
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
     if request.method == 'POST':
+        print('post')
         return ajouter_devoir(request.args, request.files)
     elif request.method == 'GET':
-        return liste_devoirs(request.args['classe'])
+        print('args',request.args,type(request.args))
+        return liste_devoirs(request.args)
+
 
 @api.route('/classe', methods=['GET'])
 def classes():
@@ -127,7 +176,7 @@ def matieres():
         SELECT nom FROM matiere
         WHERE id IN
             (SELECT matiere_id FROM matiere_enseignant
-                WHERE enseignant_id = (SELECT enseignant_id FROM enseignant WHERE nom = ?));
+                WHERE enseignant_id = (SELECT id FROM enseignant WHERE mail = ?));
     """, 
     [enseignant]).fetchall()
     return jsonify(matieres), 200

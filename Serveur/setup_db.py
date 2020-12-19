@@ -17,7 +17,8 @@ for classe in classes:
 
 c.execute("INSERT INTO enseignant VALUES (0, 'Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
 pwd = generate_password_hash('C')
-c.execute("INSERT INTO enseignant VALUES (1, 'a','a','a', ?);", [pwd])
+
+c.execute("INSERT INTO enseignant VALUES (1, 'a','b','c', ?);", [pwd])
 c.execute("INSERT INTO matiere_enseignant VALUES (1, 1);")
 
 c.close()
