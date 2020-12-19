@@ -26,7 +26,7 @@ def liste_matires(enseignant):
 
 @app.route('/')
 def home():
-    return redirect('/nouveau')
+    return redirect('/login')
 
 @app.route('/nouveau', methods=['GET', 'POST'])
 @flask_login.login_required
@@ -34,6 +34,7 @@ def nouveau_devoir():
     if request.method == 'GET':
         classes = liste_classes()
         matieres = liste_matires(flask_login.current_user.id)
+        print(matieres)
         if classes:
             return render_template('nouveau.html', user = flask_login.current_user, 
                 classes=classes, matieres=matieres)
@@ -58,7 +59,21 @@ def nouveau_devoir():
             files=files
         )
         
-        return redirect('/')
+        return redirect('/devoirs')
+
+@app.route('/devoirs',methods=['GET', 'POST'])
+@flask_login.login_required
+def affichage_devoirs():
+    if request.method =='GET':
+        devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'user': flask_login.current_user.id})
+        if devoirs_r.status_code == 200:
+            devoirs = json.loads(devoirs_r.content)
+            return render_template('devoirs.html', devoirs=devoirs)
+        else:
+            return '<h1> Erreur </h1>'
+    elif request.method=='POST':
+        return redirect('/devoirs')
+
 
 @app.route('/login',methods=['GET', 'POST'])
 def connexion():
@@ -74,8 +89,9 @@ def connexion():
         if connect_data.status_code == 200:
             user = User()
             user.id = email
+            print(user,user.id)
             flask_login.login_user(user)
-            return redirect('/')
+            return redirect('/devoirs')
         else:
             print('invalide')
             return render_template('login.html', Erreur=True)
