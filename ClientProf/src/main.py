@@ -68,7 +68,7 @@ def affichage_devoirs():
         devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'user': flask_login.current_user.id})
         if devoirs_r.status_code == 200:
             devoirs = json.loads(devoirs_r.content)
-            return render_template('devoirs.html', devoirs=devoirs)
+            return render_template('devoirs.html', devoirs=devoirs,user = flask_login.current_user)
         else:
             return '<h1> Erreur </h1>'
     elif request.method=='POST':

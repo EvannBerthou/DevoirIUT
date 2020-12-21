@@ -7,18 +7,7 @@
 </head>
 
 <body>
-
-    <form action="/classe">
-        <strong><u>Choisir sa classe</u></strong>
-        <select name="classe" onchange="this.form.submit()">
-            <option> Choisir la classe </option>
-            {% for option in classes %}
-                <option value={{ option }}> {{ option }} </option>
-            {% endfor %}
-        </select>
-    </form>
-
-   
+    <h2> Bienvenue {{ user.id }} </h2>   
     <table id="devoirs">
         <tr>
             <th class="gauche"></th>
