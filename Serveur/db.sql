@@ -64,4 +64,4 @@ CREATE TABLE matiere_enseignant (
     FOREIGN KEY (matiere_id) REFERENCES matiere(id)
 );
 
-INSERT INTO matiere (nom) VALUES ('prog'), ('algo'),('db'),('anglais');
+INSERT INTO matiere (nom) VALUES ('Programmation'), ('Algorithmie'),('Base de Donnée'),('Anglais'),('Expression communication'),('Mathématique'),('Economie Générale');
