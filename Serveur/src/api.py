@@ -116,7 +116,7 @@ def liste_devoirs(args):
         """,
         [args['user']]).fetchall()
         for row in devoirs:
-            parsed[row[0]] = list(row[1:5]) + [[]] + list(row[7:])
+            parsed[row[0]] = list(row[:5]) + [[]] + list(row[7:])
             # S'il y a une pièce jointe
             if row[5]:
                 parsed[row[0]][4].append((row[5], row[6]))
@@ -125,7 +125,21 @@ def liste_devoirs(args):
     return jsonify(list(parsed.values())), 200
 
 
+@api.route('/sup',methods=['POST'])
+def sup_devoir():
+    print("SUP DEVOIR ")
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    print('args',request.args['devoir_id'])
+    src="""
+        DELETE FROM pj WHERE devoir_id = {};
+        DELETE FROM devoir_pj WHERE devoir_id = {};
+        DELETE FROM devoir_classe WHERE devoir_id = {};
+        DELETE FROM devoirs WHERE id = {};
+        """.format(request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'])
+    c.executescript(src) 
 
+    return '', 200
 
 
 @api.route('/login', methods=['GET'])
@@ -150,10 +164,8 @@ def user():
 @api.route('/devoirs', methods=['GET', 'POST'])
 def devoirs():
     if request.method == 'POST':
-        print('post')
         return ajouter_devoir(request.args, request.files)
     elif request.method == 'GET':
-        print('args',request.args,type(request.args))
         return liste_devoirs(request.args)
 
 
