@@ -11,6 +11,7 @@
     <table id="devoirs">
         <tr>
             <th class="gauche"></th>
+            <!--<th>Numéro :</td>-->
             <th>Énoncé :</td>
             <th>Matière :</td>
             <th>Prof :</td>
@@ -22,13 +23,15 @@
         {% for devoir in devoirs %}
             <tr>
 			<th class="gauche"> {{ loop.index }} </th>
-                {% for c in devoir %}
+                {% for c in devoir[1:] %}
                     <td>
                         {# L'index 5 correspond à l'index de la liste des pièces jointe #}
                         {% if loop.index == 5 %}
+                            <div id="pj">
                             {% for pj in c %}
                                 <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
                             {% endfor %}
+                            </div>
                         {% else %}
                             {{ c }}
                         {% endif %}
@@ -37,7 +40,7 @@
                 {% endfor %}
                 <td>
                     <form action='/devoirs' method='POST' id="centre">
-                        <button type="submit" onclick="test(this)" name='submit_button' value="{{loop.index}}"> suprrimer devoir  </button>
+                        <button type="submit" onclick="test(this)" name='delet_button' value="{{devoir[0]}}"> suprrimer devoir  </button>
                     </form>
                 </td>
             </tr>

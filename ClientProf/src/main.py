@@ -64,6 +64,8 @@ def nouveau_devoir():
 @app.route('/devoirs',methods=['GET', 'POST'])
 @flask_login.login_required
 def affichage_devoirs():
+
+    print("methode ::",request.method)
     if request.method =='GET':
         devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'user': flask_login.current_user.id})
         if devoirs_r.status_code == 200:
@@ -72,6 +74,8 @@ def affichage_devoirs():
         else:
             return '<h1> Erreur </h1>'
     elif request.method=='POST':
+        print("POST -------------------------------------------------")
+        requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delet_button']})
         return redirect('/devoirs')
 
 
