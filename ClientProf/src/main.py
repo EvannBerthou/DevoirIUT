@@ -75,7 +75,14 @@ def affichage_devoirs():
             return '<h1> Erreur </h1>'
     elif request.method=='POST':
         print("POST -------------------------------------------------")
-        requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delet_button']})
+
+        print(request.form)
+        if 'delet_button' in request.form:
+            requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delet_button']})
+        else:
+            #request.post('http://localhost:5000/api/modif_devoir')
+            pass
+
         return redirect('/devoirs')
 
 

@@ -80,7 +80,7 @@ def liste_devoirs(args):
                 parsed[devoir_id] = list(row[1:5]) + [[]] + list(row[7:])
                 # S'il y a une pièce jointe
             if row[5]:
-                parsed[devoir_id][4].append((row[5], row[6]))
+                parsed[devoir_id][4].append((str(row[5]), row[6]))
 
     elif 'user' in args:
         print('devoir prof')
@@ -115,11 +115,14 @@ def liste_devoirs(args):
                );
         """,
         [args['user']]).fetchall()
+        print(devoirs)
         for row in devoirs:
             parsed[row[0]] = list(row[:5]) + [[]] + list(row[7:])
             # S'il y a une pièce jointe
+            
             if row[5]:
-                parsed[row[0]][4].append((row[5], row[6]))
+                parsed[row[0]][5].append((row[5], row[6]))
+            print(parsed[row[0]])
         print(parsed)
 
     return jsonify(list(parsed.values())), 200
@@ -130,17 +133,17 @@ def sup_devoir():
     print("SUP DEVOIR ")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    print('args',request.args['devoir_id'])
-    src="""
-        DELETE FROM pj WHERE devoir_id = {};
-        DELETE FROM devoir_pj WHERE devoir_id = {};
-        DELETE FROM devoir_classe WHERE devoir_id = {};
-        DELETE FROM devoirs WHERE id = {};
-        """.format(request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'])
-    c.executescript(src) 
-
-    return '', 200
-
+    print('args',request.args['devoir_id'],type(request.args['devoir_id']))
+    if len(request.args['devoir_id'])==1: 
+        src="""
+            DELETE FROM pj WHERE devoir_id = {};
+            DELETE FROM devoir_pj WHERE devoir_id = {};
+            DELETE FROM devoir_classe WHERE devoir_id = {};
+            DELETE FROM devoirs WHERE id = {};
+            """.format(request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'])
+        c.executescript(src) 
+        return '', 200
+    return '', 400
 
 @api.route('/login', methods=['GET'])
 def login():
