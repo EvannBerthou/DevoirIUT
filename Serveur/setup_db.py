@@ -21,7 +21,6 @@ c.execute("INSERT INTO enseignant VALUES (0,'Marsan','Laurent','laurent.marsant@
 pwd = generate_password_hash('C')
 c.execute("INSERT INTO enseignant VALUES (1,'a','b','c', ?);", [pwd])
 
-
 pwd = generate_password_hash('SQL')
 c.execute("INSERT INTO enseignant VALUES (2,'s','q','l', ?);", [pwd])
 
