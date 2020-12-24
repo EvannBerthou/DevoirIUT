@@ -203,3 +203,11 @@ def pj():
     # énorme car cela évite de devoir faire un écrire puis lecture du fichier sur le disque dur
     res = send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0]))
     return res, 200
+
+@api.route('/modif', methods=['PUT'])
+def modif():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
+    db.commit()
+    return '', 200

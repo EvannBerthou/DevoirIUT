@@ -1,15 +1,18 @@
-body {
+body
+{
 	margin:0;
 	background-color:#0092bb;
 }
 
 
-#header {
+#header
+{
 	height: 20%;
 	margin-bottom: 1%;
 }
 
-#logo {
+#logo
+{
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
@@ -17,41 +20,44 @@ body {
 }
 
 
-#centre {
-	
+#centre
+{
 	background-color: white;
-	width: fit-content;
-	height: fit-content;
+	display:table;
 	margin: auto;
 	padding: 0.5% 5% 5% 5%;
 	border-radius: 5%;
 }
 
 
-h1, h2 {
+h1, h2
+{
 	color: #00B7C6;
 	text-align:center;
 }
 
 
-.group {
+.group{ 
   position:relative; 
   margin-bottom:45px; 
 }
 
 
-label {
+label 				 {
   color:#cccccc; 
   font-size:18px;
   font-weight:normal;
   position:absolute;
   left:10px;
   top:10px;
+  
+  pointer-events:none;
   transition:0.2s ease all;
 }
 
 
-input {
+input
+{
 	padding: 10px;
     font-size: 15px;
 	display:block;
@@ -61,8 +67,8 @@ input {
     border-radius: 50px;
     box-shadow: 6px 6px 5px rgba(66,66,66,.80);
 }
-
-input:focus {
+input:focus
+{
 	outline:none;
 	border:none;
 	border-radius:0;
@@ -70,7 +76,8 @@ input:focus {
 	border-bottom:2px solid red;
 }
 
-input:focus ~ label, input:valid ~ label {
+input:focus ~ label, input:valid ~ label
+{
 	color:#999;
 	top:-15px;
 	font-size:15px;
@@ -89,11 +96,9 @@ input:focus ~ label, input:valid ~ label {
 	padding:6px 50px;
 	text-decoration:none;
 }
-
 .button:hover {
 	color:blue;
 }
-
 .button:active {
 	position:relative;
 	top:-1px;

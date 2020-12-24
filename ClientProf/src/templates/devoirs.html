@@ -46,14 +46,15 @@
                         </th>
                     {% endfor %}
                     <th>
-                        <button type="button" style="visibility: visible;" id="button_{{devoir[0]}}" value="{{devoir[0]}}" onclick="editable(this)" > Modifier</button>
+                        <button type="button" style="visibility: visible;" id="button_{{devoir[0]}}"
+                            value="{{devoir[0]}}" onclick="editable(this)" > Modifier</button>
 
-                        <button type="submit" style="visibility: hidden;" id="save_button_{{devoir[0]}}" value="{{devoir[0]}}">Enregistrer</button>
-
+                        <button type="submit" style="visibility: hidden;" name='devoir_id'
+                            id="save_button_{{devoir[0]}}" value="{{devoir[0]}}">Enregistrer</button>
                     </th>
                     <th>
                         <form action='/devoirs' method='POST' id="centre">
-                            <button type="submit" name='delet_button' value="{{devoir[0]}}"> suprrimer devoir  </button>
+                            <button type="submit" name='delete_button' value="{{devoir[0]}}"> suprrimer devoir  </button>
                         </form>
                     </th>
                 </form>
