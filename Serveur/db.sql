@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS classes;
 CREATE TABLE classes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     nom TEXT NOT NULL
 );
 
@@ -47,7 +47,8 @@ CREATE TABLE enseignant (
     nom TEXT NOT NULL,
     prenom TEXT NOT NULL,
     mail TEXT NOT NULL,
-    pwd TEXT NOT NULL
+    pwd TEXT NOT NULL,
+    admin INT NOT NULL CHECK (admin IN (0,1))
 );
 
 DROP TABLE IF EXISTS matiere;
@@ -64,7 +65,7 @@ CREATE TABLE matiere_enseignant (
     FOREIGN KEY (matiere_id) REFERENCES matiere(id)
 );
 
-INSERT INTO matiere (nom) VALUES ('Programmation'); 
+INSERT INTO matiere (nom) VALUES ('Programmation');
 INSERT INTO matiere (nom) VALUES ('Algorithmie');
 INSERT INTO matiere (nom) VALUES ('Base_de_Donnée');
 INSERT INTO matiere (nom) VALUES ('Mathématique');
