@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <h2> Bienvenue {{ user.id }} </h2>   
+    <h2> Bienvenue {{ user.id }} </h2>
     <table id="devoirs">
         <tr>
             <th class="gauche"></th>
@@ -21,31 +21,29 @@
         </tr>
 
         {% for devoir in devoirs %}
-            <tr id="line_{{devoir[0]}}">		    
+            <tr id="line_{{devoir[0]}}">
                 <form action="/devoirs" method="POST" id="form_{{devoir[0]}}" name="devoir">
-                    <th class="gauche"> 
-                        {{ loop.index }} 
+                    <th class="gauche">
+                        {{ loop.index }}
                     </th>
                     {% for c in devoir[1:] %}
                         <th id="{{loop.index}}">
                             {# L'index 5 correspond à l'index de la liste des pièces jointe #}
                             {% if loop.index == 5 %}
-
                                 {% for pj in c %}
-                                    <a href="{{ url_for('app.pj', pj = pj[0] ) }}"> {{ pj[1] }} </a> </br>
-                                    <!--{{pj}}-->
+                                    <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
                                 {% endfor %}
-                                   
+
                             {% elif loop.index==1 %}
                                 <textarea class="{{devoir[0]}}" name="enonce" readonly="true">{{ c }}</textarea>
 
-                            {% elif loop.index==4 %} 
+                            {% elif loop.index==4 %}
                                 <input type="date" class="{{devoir[0]}}" name="date" value="{{c}}" readonly="true">
 
-                            {% else %}                         
+                            {% else %}
                                 {{ c }}
                             {% endif %}
-                        </th>                        
+                        </th>
                     {% endfor %}
                     <th>
                         <button type="button" style="visibility: visible;" id="button_{{devoir[0]}}" value="{{devoir[0]}}" onclick="editable(this)" > Modifier</button>
@@ -68,25 +66,21 @@
 <a href="/nouveau">ajouter un devoir </a>
 </html>
 <script type="text/javascript">
-
-    var open =false;    
-    function editable(e){
+    var open = false;
+    function editable(e) {
         if (!open){
-            open=true;
-            let elem=document.getElementsByClassName(e.value);
-            document.getElementById("save_button_"+e.value).style.visibility='visible';
-            document.getElementById("button_"+e.value).style.visibility = 'hidden';
-            console.log(e,e.value);
-            console.log(elem,elem.length);
-            for(let i=0;i!=elem.length;i++){
-                elem[i].readOnly=false;
-                console.log(elem[i])
-                
+            open = true;
+            let elem = document.getElementsByClassName(e.value);
+            document.getElementById("save_button_" + e.value).style.visibility = 'visible';
+            document.getElementById("button_" + e.value).style.visibility = 'hidden';
+            console.log(e, e.value);
+            console.log(elem, elem.length);
+            for(let i = 0; i != elem.length; i++){
+                elem[i].readOnly = false;
             }
         }
         else {
-            alert("Vous ne pouvez modifier que un devoir à la foi !")
+            alert("Vous ne pouvez modifier que un devoir à la fois !")
         }
-    } 
-
+    }
 </script>
