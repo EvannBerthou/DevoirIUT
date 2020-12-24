@@ -1,8 +1,9 @@
-import requests, json, os, re, io
+import requests, json, os, re, io, flask_login
 from flask import Flask, request, render_template, redirect, send_file
-import flask_login
+from admin import admin
 
 app = Flask(__name__, template_folder='templates')
+app.register_blueprint(admin, url_prefix='/admin')
 app.secret_key = 'secret key'
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -36,6 +37,7 @@ def nouveau_devoir():
         matieres = liste_matires(flask_login.current_user.id)
         if classes:
             return render_template('nouveau.html', user = flask_login.current_user,
+                    import flask_login
                 classes=classes, matieres=matieres)
         else:
             return '<h1> Erreur </h1>'

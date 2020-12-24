@@ -1,4 +1,4 @@
-import sqlite3, os, io
+import sqlite3, os, io, flask_login
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -206,3 +206,21 @@ def modif():
     f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
     db.commit()
     return '', 200
+
+
+@api.route('/role', methods=['GET'])
+@flask_login.login_required
+def get_user_role():
+    print(dir(request))
+    print(request.cookies)
+    print(request.headers)
+    user_id = request.args['user_id']
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("""
+        SELECT 1 FROM enseignant
+            WHERE mail = ? AND admin = 1;
+    """, [user_id]).fetchone()
+    if r:
+        return '', 200
+    return '', 403
