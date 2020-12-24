@@ -124,19 +124,14 @@ def liste_devoirs(args):
 @api.route('/sup',methods=['POST'])
 def sup_devoir():
     db = sqlite3.connect('src/devoirs.db')
+    i = request.args['devoir_id']
     c = db.cursor()
-    print('args',request.args['devoir_id'],type(request.args['devoir_id']))
-    # TODO: A refaire
-    if len(request.args['devoir_id'])==1:
-        src="""
-            DELETE FROM pj WHERE devoir_id = {};
-            DELETE FROM devoir_pj WHERE devoir_id = {};
-            DELETE FROM devoir_classe WHERE devoir_id = {};
-            DELETE FROM devoirs WHERE id = {};
-            """.format(request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'],request.args['devoir_id'])
-        c.executescript(src)
-        return '', 200
-    return '', 400
+    c.execute("DELETE FROM pj WHERE devoir_id = ?;", [i])
+    c.execute("DELETE FROM devoir_pj WHERE devoir_id = ?;", [i])
+    c.execute("DELETE FROM devoir_classe WHERE devoir_id = ?;", [i])
+    c.execute("DELETE FROM devoirs WHERE id = ?;", [i])
+    db.commit()
+    return '', 200
 
 @api.route('/login', methods=['GET'])
 def login():
