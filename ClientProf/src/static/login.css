@@ -13,10 +13,9 @@ body
 
 #logo
 {
-	display: block;
+	display: table;
 	margin-left: auto;
 	margin-right: auto;
-	width: fit-content;
 }
 
 
@@ -37,20 +36,20 @@ h1, h2
 }
 
 
-.group{ 
-  position:relative; 
-  margin-bottom:45px; 
+.group{
+  position:relative;
+  margin-bottom:45px;
 }
 
 
 label 				 {
-  color:#cccccc; 
+  color:#cccccc;
   font-size:18px;
   font-weight:normal;
   position:absolute;
   left:10px;
   top:10px;
-  
+
   pointer-events:none;
   transition:0.2s ease all;
 }
