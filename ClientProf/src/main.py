@@ -73,12 +73,14 @@ def affichage_devoirs():
         else:
             return '<h1> Erreur </h1>'
     elif request.method=='POST':
-        if 'delet_button' in request.form:
-            requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delet_button']})
+        if 'delete_button' in request.form:
+            requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delete_button']})
         else:
-            #request.post('http://localhost:5000/api/modif_devoir')
-            pass
-
+            # TODO: Pouvoir changer la matière d'un devoir et les classes concernées
+            params = {'devoir_id': request.form['devoir_id'],
+                      'enonce': request.form['enonce'],
+                      'date': request.form['date']}
+            requests.put('http://localhost:5000/api/modif', params=params)
         return redirect('/devoirs')
 
 
