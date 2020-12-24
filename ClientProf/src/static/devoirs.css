@@ -1,0 +1,12 @@
+textarea {
+    resize: none;
+}
+
+textarea[readonly] {
+    border: none;
+}
+
+input[type="text"] {
+    border: none;
+    text-align: center;
+}
