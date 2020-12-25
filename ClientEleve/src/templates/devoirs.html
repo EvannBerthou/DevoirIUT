@@ -43,7 +43,7 @@
         {% for devoir in devoirs %}
             <tr>
 			<th class="gauche"> {{ loop.index }} </th>
-                {% for c in devoir %}
+                {% for c in devoir[1:] %}
                     <td>
                         {# L'index 5 correspond à l'index de la liste des pièces jointe #}
                         {% if loop.index == 5 %}
