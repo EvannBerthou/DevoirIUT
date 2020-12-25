@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, send_from_directory, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_jwt_extended import (
-    jwt_required, create_access_token,
+    jwt_required, create_access_token, jwt_optional,
     jwt_refresh_token_required, create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
@@ -15,6 +15,7 @@ def safe_name(name):
     keep = (' ','.','_')
     return "".join(c for c in name if c.isalnum() or c in keep).rstrip()
 
+@api.route('/devoirs', methods=['POST'])
 def ajouter_devoir(args, files):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -49,7 +50,11 @@ def ajouter_devoir(args, files):
     db.commit()
     return jsonify({}), 200
 
-def liste_devoirs(args):
+@api.route('/devoirs', methods=['GET'])
+@jwt_optional
+def liste_devoirs():
+    args = request.args
+    print(get_jwt_identity())
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     parsed = {}
@@ -87,8 +92,9 @@ def liste_devoirs(args):
             # S'il y a une pièce jointe
             if row[5]:
                 parsed[devoir_id][4].append((str(row[5]), row[6]))
+        return jsonify(devoirs=list(parsed.values())), 200
 
-    elif 'user' in args:
+    else:
         devoirs = c.execute("""
             SELECT *
             FROM (
@@ -117,15 +123,14 @@ def liste_devoirs(args):
                                WHERE enseignant_id = enseignant.id AND mail = ?)
                );
         """,
-        [args['user']]).fetchall()
+        [get_jwt_identity()]).fetchall()
         for row in devoirs:
             parsed[row[0]] = list(row[:5]) + [[]] + list(row[7:])
             # S'il y a une pièce jointe
 
             if row[5]:
                 parsed[row[0]][5].append((row[5], row[6]))
-
-    return jsonify(list(parsed.values())), 200
+        return jsonify(user=get_jwt_identity(), devoirs=list(parsed.values())), 200
 
 
 @api.route('/sup',methods=['POST'])
@@ -201,14 +206,6 @@ def user():
     user_found = c.execute('SELECT 1 FROM enseignant WHERE mail = ?', [email]).fetchone()
     return '', 404 if user_found == None else 200
 
-@api.route('/devoirs', methods=['GET'])
-def get_devoirs():
-    return liste_devoirs(request.args)
-
-@api.route('/devoirs', methods=['POST'])
-def post_devoirs():
-    return ajouter_devoir(request.args, request.files)
-
 
 @api.route('/classe', methods=['GET'])
 def classes():
@@ -218,21 +215,19 @@ def classes():
     return jsonify(classes), 200
 
 @api.route('/matieres', methods=['GET'])
+@jwt_required
 def matieres():
     print('t')
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    enseignant = request.args['enseignant']
-    if not enseignant:
-        return None, 404
 
     matieres = c.execute("""
         SELECT nom FROM matiere
         WHERE id IN
             (SELECT matiere_id FROM matiere_enseignant
-                WHERE enseignant_id = ?);
+                WHERE enseignant_id = (SELECT id FROM enseignant WHERE mail = ?));
     """,
-    [enseignant]).fetchall()
+    [get_jwt_identity()]).fetchall()
     return jsonify(matieres), 200
 
 @api.route('/pj', methods=['GET'])
@@ -264,17 +259,14 @@ def modif():
 @jwt_required
 def get_user_role():
     username = get_jwt_identity()
-    print(username)
-    return '', 200
-    user_id = request.args['user_id']
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("""
         SELECT 1 FROM enseignant
             WHERE mail = ? AND admin = 1;
-    """, [user_id]).fetchone()
+    """, [username]).fetchone()
     if r:
-        return '', 200
+        return jsonify(user=get_jwt_identity()), 200
     return '', 404
 
 @api.route('/protected', methods=['GET'])

@@ -5,6 +5,7 @@ from admin import admin
 app = Flask(__name__, template_folder='templates')
 app.register_blueprint(admin, url_prefix='/admin')
 app.secret_key = 'secret key'
+
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
     if classes_r.status_code == 200:
@@ -12,8 +13,7 @@ def liste_classes():
     return None
 
 def liste_matires():
-    matieres_r = requests.get('http://localhost:5000/api/matieres',
-            params={'enseignant':'c'})
+    matieres_r = requests.get('http://localhost:5000/api/matieres', cookies=request.cookies)
     if matieres_r.status_code == 200:
         return [''.join(matiere) for matiere in json.loads(matieres_r.content)]
     return None
@@ -53,14 +53,16 @@ def nouveau_devoir():
 
 @app.route('/devoirs',methods=['GET', 'POST'])
 def affichage_devoirs():
-    if request.method =='GET':
-        devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'user': flask_hhogin.current_user.id})
-        if devoirs_r.status_code == 200:
-            devoirs = json.loads(devoirs_r.content)
-            return render_template('devoirs.html', devoirs=devoirs, user = 'c')
+    if request.method == 'GET':
+        print(request.cookies)
+        resp_r = requests.get('http://localhost:5000/api/devoirs', cookies=request.cookies)
+        if resp_r.status_code == 200:
+            resp = json.loads(resp_r.content)
+            print(resp)
+            return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'])
         else:
             return '<h1> Erreur </h1>'
-    elif request.method=='POST':
+    elif request.method == 'POST':
         if 'delete_button' in request.form:
             requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delete_button']})
         else:
@@ -82,7 +84,7 @@ def connexion():
         connect_data = requests.post('http://localhost:5000/api/token/auth', json={'username': email, 'password': pwd})
         #recuperation des données de la personne conectée nom , prenom
         if connect_data.status_code == 200:
-            response = make_response(redirect('/admin'))
+            response = make_response(redirect('/devoirs'))
             response.set_cookie('access_token_cookie', connect_data.cookies.get('access_token_cookie'))
             return response
         else:
@@ -90,9 +92,7 @@ def connexion():
 
 @app.route('/logout')
 def logout():
-    a = requests.post('http://localhost:5000/api/token/remove')
-    print(a.headers)
-    print(a.content)
+    requests.post('http://localhost:5000/api/token/remove')
     resp = make_response(redirect('/'))
     resp.delete_cookie('access_token_cookie')
     return resp
