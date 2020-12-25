@@ -1,15 +1,10 @@
 import requests, json, os, re, io
-from flask import Flask, request, render_template, redirect, send_file
-import flask_login
+from flask import Flask, request, render_template, redirect, send_file, make_response
+from admin import admin
 
 app = Flask(__name__, template_folder='templates')
+app.register_blueprint(admin, url_prefix='/admin')
 app.secret_key = 'secret key'
-login_manager = flask_login.LoginManager()
-login_manager.init_app(app)
-
-class User(flask_login.UserMixin):
-# TODO: Ajouter des infos tels que le nom au lieu de mettre le nom directement dans l'id
-    pass
 
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
@@ -17,9 +12,8 @@ def liste_classes():
         return [''.join(classe) for classe in json.loads(classes_r.content)]
     return None
 
-def liste_matires(enseignant):
-    matieres_r = requests.get('http://localhost:5000/api/matieres',
-            params={'enseignant':enseignant})
+def liste_matires():
+    matieres_r = requests.get('http://localhost:5000/api/matieres', cookies=request.cookies)
     if matieres_r.status_code == 200:
         return [''.join(matiere) for matiere in json.loads(matieres_r.content)]
     return None
@@ -29,13 +23,12 @@ def home():
     return redirect('/login')
 
 @app.route('/nouveau', methods=['GET', 'POST'])
-@flask_login.login_required
 def nouveau_devoir():
     if request.method == 'GET':
         classes = liste_classes()
-        matieres = liste_matires(flask_login.current_user.id)
+        matieres = liste_matires()
         if classes:
-            return render_template('nouveau.html', user = flask_login.current_user,
+            return render_template('nouveau.html', user = 'c',
                 classes=classes, matieres=matieres)
         else:
             return '<h1> Erreur </h1>'
@@ -44,39 +37,33 @@ def nouveau_devoir():
         classes = [key for key, val in request.form.items() if val == 'on']
         enonce = request.form['enonce']
         matiere = request.form['matiere']
-        prof = flask_login.current_user.id # Le nom du prof est l'id, devra être changé pour utiliser current_user.nom
         date = request.form['date']
 
-
-
-        #files = {file.filename: file.stream.read() for file in request.files.getlist('file') if file.filename != ''}
-        files = {}
-        for file in request.files.getlist('file'):
-            if file.filename != '':
-                files[file.filename] = file.stream.read()
+        files = {file.filename: file.stream.read() for file in request.files.getlist('file') if file.filename != ''}
 
         requests.post('http://localhost:5000/api/devoirs',
-            params={'enonce': enonce,'matiere': matiere, 'prof': prof, 'classe': classes, 'date': date},
-            files=files
+            params={'enonce': enonce,'matiere': matiere, 'classe': classes, 'date': date},
+            files=files,
+            cookies = request.cookies
         )
 
         return redirect('/devoirs')
 
 @app.route('/devoirs',methods=['GET', 'POST'])
-@flask_login.login_required
 def affichage_devoirs():
-    if request.method =='GET':
-        devoirs_r = requests.get('http://localhost:5000/api/devoirs', params={'user': flask_login.current_user.id})
-        if devoirs_r.status_code == 200:
-            devoirs = json.loads(devoirs_r.content)
-            return render_template('devoirs.html', devoirs=devoirs,user = flask_login.current_user)
+    if request.method == 'GET':
+        print(request.cookies)
+        resp_r = requests.get('http://localhost:5000/api/devoirs', cookies=request.cookies)
+        if resp_r.status_code == 200:
+            resp = json.loads(resp_r.content)
+            print(resp)
+            return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'])
         else:
             return '<h1> Erreur </h1>'
-    elif request.method=='POST':
+    elif request.method == 'POST':
         if 'delete_button' in request.form:
             requests.post('http://localhost:5000/api/sup', params={'devoir_id':request.form['delete_button']})
         else:
-            # TODO: Pouvoir changer la matière d'un devoir et les classes concernées
             params = {'devoir_id': request.form['devoir_id'],
                       'enonce': request.form['enonce'],
                       'date': request.form['date']}
@@ -92,37 +79,21 @@ def connexion():
     elif request.method == 'POST':
         email, pwd = request.form['username'], request.form['pwd']
 
-        connect_data = requests.get('http://localhost:5000/api/login', params={'email': email, 'pwd': pwd})
+        connect_data = requests.post('http://localhost:5000/api/token/auth', json={'username': email, 'password': pwd})
         #recuperation des données de la personne conectée nom , prenom
         if connect_data.status_code == 200:
-            user = User()
-            user.id = email
-            flask_login.login_user(user)
-            return redirect('/devoirs')
+            response = make_response(redirect('/devoirs'))
+            response.set_cookie('access_token_cookie', connect_data.cookies.get('access_token_cookie'))
+            return response
         else:
             return render_template('login.html', Erreur=True)
 
-@login_manager.user_loader
-def user_loader(email):
-    if not email:
-        return
-
-    user_data = requests.get('http://localhost:5000/api/user', params={'email': email})
-    if user_data.status_code != 200:
-        return None
-
-    user = User()
-    user.id = email
-    return user
-
 @app.route('/logout')
 def logout():
-    flask_login.logout_user()
-    return redirect('/')
-
-@login_manager.unauthorized_handler
-def unauthorized_handler():
-    return 'Accès refusé'
+    requests.post('http://localhost:5000/api/token/remove')
+    resp = make_response(redirect('/'))
+    resp.delete_cookie('access_token_cookie')
+    return resp
 
 @app.route('/pj')
 def pj():

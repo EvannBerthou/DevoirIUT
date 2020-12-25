@@ -15,14 +15,11 @@ c.executescript(sql_str)
 for classe in classes:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
 
-c.execute("INSERT INTO enseignant VALUES (0,'Marsan','Laurent','laurent.marsant@uvsq.fr','C'); ")
-
-
 pwd = generate_password_hash('C')
-c.execute("INSERT INTO enseignant VALUES (1,'a','b','c', ?);", [pwd])
+c.execute("INSERT INTO enseignant VALUES (1,'a','b','c', ?, 1);", [pwd])
 
 pwd = generate_password_hash('SQL')
-c.execute("INSERT INTO enseignant VALUES (2,'s','q','l', ?);", [pwd])
+c.execute("INSERT INTO enseignant VALUES (2,'s','q','l', ?, 0);", [pwd])
 
 #('Programmation'), ('Algorithmie'),('Base de Donnée'),('Anglais'),('Expression communication'),('Mathématique'),('Economie Générale');
 c.execute("INSERT INTO matiere_enseignant VALUES (1, 1);")
