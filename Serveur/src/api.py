@@ -2,6 +2,13 @@ import sqlite3, os, io
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from flask_jwt_extended import (
+    jwt_required, create_access_token,
+    jwt_refresh_token_required, create_refresh_token,
+    get_jwt_identity, set_access_cookies,
+    set_refresh_cookies, unset_jwt_cookies
+)
+
 api = Blueprint('api', __name__)
 
 def safe_name(name):
@@ -133,9 +140,58 @@ def sup_devoir():
     db.commit()
     return '', 200
 
-@api.route('/login', methods=['GET'])
+@api.route('/token/auth', methods=['POST'])
 def login():
-    return '', 200
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    if not username:
+        return jsonify({"msg": "Missing username parameter"}), 400
+    if not password:
+        return jsonify({"msg": "Missing password parameter"}), 400
+
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    pass_found = c.execute('SELECT id, mail, pwd FROM enseignant WHERE mail = ?;', [username]).fetchone()
+    if pass_found and check_password_hash(pass_found[2], password):
+        # Create the tokens we will be sending back to the user
+        access_token = create_access_token(identity=username)
+        refresh_token = create_refresh_token(identity=username)
+
+        # Set the JWT cookies in the response
+        resp = jsonify({'login': True})
+        set_access_cookies(resp, access_token)
+        set_refresh_cookies(resp, refresh_token)
+        return resp, 200
+
+    return jsonify({"error": "Bad username or password"}), 401
+
+# Same thing as login here, except we are only setting a new cookie
+# for the access token.
+@api.route('/token/refresh', methods=['POST'])
+@jwt_refresh_token_required
+def refresh():
+    # Create the new access token
+    current_user = get_jwt_identity()
+    access_token = create_access_token(identity=current_user)
+
+    # Set the JWT access cookie in the response
+    resp = jsonify({'refresh': True})
+    set_access_cookies(resp, access_token)
+    return resp, 200
+
+# Because the JWTs are stored in an httponly cookie now, we cannot
+# log the user out by simply deleting the cookie in the frontend.
+# We need the backend to send us a response to delete the cookies
+# in order to logout. unset_jwt_cookies is a helper function to
+# do just that.
+@api.route('/token/remove', methods=['POST'])
+def logout():
+    resp = jsonify({'logout': True})
+    unset_jwt_cookies(resp)
+    return resp, 200
 
 @api.route('/user', methods=['GET'])
 def user():
@@ -205,7 +261,11 @@ def modif():
 
 
 @api.route('/role', methods=['GET'])
+@jwt_required
 def get_user_role():
+    username = get_jwt_identity()
+    print(username)
+    return '', 200
     user_id = request.args['user_id']
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -216,3 +276,10 @@ def get_user_role():
     if r:
         return '', 200
     return '', 404
+
+@api.route('/protected', methods=['GET'])
+@jwt_required
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
