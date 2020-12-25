@@ -37,16 +37,14 @@ def nouveau_devoir():
         classes = [key for key, val in request.form.items() if val == 'on']
         enonce = request.form['enonce']
         matiere = request.form['matiere']
-        prof = 'c' #flask_login.current_user.id # Le nom du prof est l'id, devra être changé pour utiliser current_user.nom
         date = request.form['date']
 
-
-
-        #files = {file.filename: file.stream.read() for file in request.files.getlist('file') if file.filename != ''}
+        files = {file.filename: file.stream.read() for file in request.files.getlist('file') if file.filename != ''}
 
         requests.post('http://localhost:5000/api/devoirs',
-            params={'enonce': enonce,'matiere': matiere, 'prof': prof, 'classe': classes, 'date': date},
-            files=files
+            params={'enonce': enonce,'matiere': matiere, 'classe': classes, 'date': date},
+            files=files,
+            cookies = request.cookies
         )
 
         return redirect('/devoirs')
