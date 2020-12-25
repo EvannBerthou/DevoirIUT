@@ -1,5 +1,5 @@
 import requests, json, os, re, io
-from flask import Flask, request, render_template, redirect, send_file
+from flask import Flask, request, render_template, redirect, send_file, make_response
 from admin import admin
 
 app = Flask(__name__, template_folder='templates')
@@ -28,7 +28,7 @@ def nouveau_devoir():
         classes = liste_classes()
         matieres = liste_matires()
         if classes:
-            return render_template('nouveau.html', user = 'c')
+            return render_template('nouveau.html', user = 'c',
                 classes=classes, matieres=matieres)
         else:
             return '<h1> Erreur </h1>'
@@ -79,19 +79,23 @@ def connexion():
     elif request.method == 'POST':
         email, pwd = request.form['username'], request.form['pwd']
 
-        connect_data = requests.get('http://localhost:5000/api/login', params={'email': email, 'pwd': pwd})
+        connect_data = requests.post('http://localhost:5000/api/token/auth', json={'username': email, 'password': pwd})
         #recuperation des données de la personne conectée nom , prenom
         if connect_data.status_code == 200:
-            #user = User()
-            #user.id = email
-            #flask_login.login_user(user)
-            return redirect('/devoirs')
+            response = make_response(redirect('/admin'))
+            response.set_cookie('access_token_cookie', connect_data.cookies.get('access_token_cookie'))
+            return response
         else:
             return render_template('login.html', Erreur=True)
 
 @app.route('/logout')
 def logout():
-    return redirect('/')
+    a = requests.post('http://localhost:5000/api/token/remove')
+    print(a.headers)
+    print(a.content)
+    resp = make_response(redirect('/'))
+    resp.delete_cookie('access_token_cookie')
+    return resp
 
 @app.route('/pj')
 def pj():
