@@ -12,6 +12,14 @@ def liste_classes():
         return [''.join(classe) for classe in json.loads(classes_r.content)]
     return None
 
+"""
+def classe_devoirs(devoirs):
+    dico_class={}
+    for devoir in devoirs:
+        dico_class[devoir[0]]=requests.get('http://localhost:5000/api/classe_devoirs')
+    return dico_class
+"""
+
 def liste_matires():
     matieres_r = requests.get('http://localhost:5000/api/matieres', cookies=request.cookies)
     if matieres_r.status_code == 200:
@@ -34,7 +42,8 @@ def nouveau_devoir():
             return '<h1> Erreur </h1>'
 
     elif request.method == 'POST':
-        classes = [key for key, val in request.form.items() if val == 'on']
+        classes = ''.join([key+',' for key, val in request.form.items() if val == 'on'])
+        print(classes)
         enonce = request.form['enonce']
         matiere = request.form['matiere']
         date = request.form['date']
@@ -55,8 +64,9 @@ def affichage_devoirs():
         print(request.cookies)
         resp_r = requests.get('http://localhost:5000/api/devoirs', cookies=request.cookies)
         if resp_r.status_code == 200:
+            dic_class={}
             resp = json.loads(resp_r.content)
-            print(resp)
+            print('resp ::',resp)
             return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'])
         else:
             return '<h1> Erreur </h1>'
