@@ -75,22 +75,38 @@ def devoir_enseignant(username):
     """,
     [username]).fetchall()
 
+
+def get_class(id_devoir):
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    return c.execute("""
+        SELECT nom 
+        FROM classes 
+        WHERE id IN (SELECT classe_id 
+                    FROM devoir_classe 
+                    WHERE devoir_id=? );
+        """,[id_devoir]).fetchall()
+
+
 # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
 def merge_pj(devoirs):
     parsed = {}
     for row in devoirs:
         devoir_id = row[0]
         if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
-            parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:])
+            parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) + [[classe[0] for classe in get_class(devoir_id)]]
         # S'il y a une pièce jointe
         if row[5]:
             parsed[devoir_id][5].append((str(row[5]), row[6]))
     return list(parsed.values())
 
 
+
+
 @api.route('/devoirs', methods=['POST'])
 @jwt_required
 def ajouter_devoir():
+    print("POST")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce = request.args['enonce']
@@ -112,7 +128,7 @@ def ajouter_devoir():
     """,
     [enonce,matiere,prof,date])
     devoir_id = c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0]
-    for classe in request.args['classe']:
+    for classe in request.args['classe'].split(','):
         c.execute("""
             INSERT INTO devoir_classe
             VALUES (?, (SELECT id FROM classes WHERE nom = ?));
@@ -128,6 +144,7 @@ def ajouter_devoir():
 @api.route('/devoirs', methods=['GET'])
 @jwt_optional
 def liste_devoirs():
+    print("GET")
     if 'classe' in request.args:
         devoirs = merge_pj(devoir_classe(request.args['classe']))
         return jsonify(devoirs=devoirs), 200
@@ -190,6 +207,7 @@ def pj():
 @api.route('/modif', methods=['PUT'])
 def modif():
     db = sqlite3.connect('src/devoirs.db')
+    print(request.args)
     c = db.cursor()
     f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
     db.commit()
