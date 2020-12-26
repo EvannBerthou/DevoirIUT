@@ -43,10 +43,30 @@
                             {% elif loop.index==4 %}
                                 <input type="text" value="{{ c }}" class="{{devoir[0]}}" name="date" readonly></input>
                             {% elif loop.index==7 %}
-                                {% for classe in c %}
-                                    <p style="font-size: 15px; line-height: 2px;"> {{classe}}</p>
+                                <div id="classes_{{devoir[0]}}" style="visibility: visible;">
+                                    {% for classe in c %}
+                                        <p class="classe_devoir_{{devoir[0]}}" style="font-size: 15px; line-height: 5px;">{{classe}}</p>
+                                    {% endfor %}    
+                                </div>
+                                
+                                <div id="selection_classe_{{devoir[0]}}" style="visibility: hidden">   
+                                    <div class="selectBox" value="{{devoir[0]}}" onclick="afficherClasses(this)">
+                                        <select>
+                                            <option> Choix des classes </option>
+                                        </select>
+                                        <div class="overSelect"></div>
+                                    </div>
+                                    <div id="classes">
+                                        {% for option in classes %}
+                                            <label for="{{ option }}">
+                                                <input type="checkbox" class="option_{{devoir[0]}}" name="{{ option }}" />
+                                                {{ option }} 
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
 
-                                {% endfor %}
+                                
 
                             {% else %}
                                 {{ c }}
@@ -74,4 +94,33 @@
     <!--<div id="signaler"><u>Signaler bug/envoyer un commentaire</u></div>-->
     <a href="/nouveau">ajouter un devoir </a>
 </body>
+<style>
+.multiselect {
+    width: 200px;
+}
+.selectBox {
+    position: relative;
+}
+.selectbox select {
+    width: 100%;
+}
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#classes {
+    display: none;
+    border: 1px black solid;
+}
+
+#classes label {
+    display: block;
+}
+</style>
+
+
 </html>
