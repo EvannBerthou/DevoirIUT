@@ -64,10 +64,10 @@ def affichage_devoirs():
         print(request.cookies)
         resp_r = requests.get('http://localhost:5000/api/devoirs', cookies=request.cookies)
         if resp_r.status_code == 200:
-            dic_class={}
             resp = json.loads(resp_r.content)
+            classes=liste_classes()
             print('resp ::',resp)
-            return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'])
+            return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'], classes=classes)
         else:
             return '<h1> Erreur </h1>'
     elif request.method == 'POST':
