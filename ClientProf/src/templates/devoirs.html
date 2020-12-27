@@ -35,21 +35,19 @@
                                 {% for pj in c %}
                                     <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
                                 {% endfor %}
-
-
                             {% elif loop.index==1 %}
                                 <textarea style="text-align: center;"class="{{devoir[0]}}" name="enonce" readonly>{{ c }}</textarea>
 
                             {% elif loop.index==4 %}
                                 <input type="text" value="{{ c }}" class="{{devoir[0]}}" name="date" readonly></input>
                             {% elif loop.index==7 %}
-                                <div id="classes_{{devoir[0]}}" style="visibility: visible;">
+                                <div id="classes_{{devoir[0]}}" style="display: block;">
                                     {% for classe in c %}
                                         <p class="classe_devoir_{{devoir[0]}}" style="font-size: 15px; line-height: 5px;">{{classe}}</p>
                                     {% endfor %}    
                                 </div>
                                 
-                                <div id="selection_classe_{{devoir[0]}}" style="visibility: hidden">   
+                                <div id="selection_classe_{{devoir[0]}}" style="display: none;">   
                                     <div class="selectBox" value="{{devoir[0]}}" onclick="afficherClasses(this)">
                                         <select>
                                             <option> Choix des classes </option>
@@ -75,10 +73,10 @@
 
                     {% endfor %}
                     <th>
-                        <button type="button" style="visibility: visible;" id="button_{{devoir[0]}}"
+                        <button type="button" style="display: block;" id="button_{{devoir[0]}}"
                             value="{{devoir[0]}}" onclick="editable(this)" > Modifier</button>
 
-                        <button type="submit" style="visibility: hidden;" name='devoir_id'
+                        <button type="submit" style="display: none;" name='devoir_id'
                             id="save_button_{{devoir[0]}}" value="{{devoir[0]}}">Enregistrer</button>
                     </th>
                     <th>
