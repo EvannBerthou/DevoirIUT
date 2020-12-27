@@ -3,10 +3,10 @@ function editable(e) {
     if (!open){
         open = true;
         let elem = document.getElementsByClassName(e.value);
-        document.getElementById("save_button_" + e.value).style.visibility = 'visible';
-        document.getElementById("button_" + e.value).style.visibility = 'hidden';
-        document.getElementById("selection_classe_"+e.value).style.visibility='visible';
-        document.getElementById("classes_"+e.value).style.visibility='hidden';
+        document.getElementById("save_button_" + e.value).style.display = 'block';
+        document.getElementById("button_" + e.value).style.display = 'none';
+        document.getElementById("selection_classe_"+e.value).style.display='block';
+        document.getElementById("classes_"+e.value).style.display='none';
 
         for(let i = 0; i != elem.length; i++) {
             elem[i].readOnly = false;
