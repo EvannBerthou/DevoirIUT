@@ -7,7 +7,6 @@ function editable(e) {
         document.getElementById("button_" + e.value).style.display = 'none';
         document.getElementById("selection_classe_"+e.value).style.display='block';
         document.getElementById("classes_"+e.value).style.display='none';
-
         for(let i = 0; i != elem.length; i++) {
             elem[i].readOnly = false;
             if (elem[i].name == 'date') {
