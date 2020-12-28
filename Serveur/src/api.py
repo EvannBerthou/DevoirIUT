@@ -80,10 +80,10 @@ def get_class(id_devoir):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
-        SELECT nom 
-        FROM classes 
-        WHERE id IN (SELECT classe_id 
-                    FROM devoir_classe 
+        SELECT nom
+        FROM classes
+        WHERE id IN (SELECT classe_id
+                    FROM devoir_classe
                     WHERE devoir_id=? );
         """,[id_devoir]).fetchall()
 
@@ -106,7 +106,6 @@ def merge_pj(devoirs):
 @api.route('/devoirs', methods=['POST'])
 @jwt_required
 def ajouter_devoir():
-    print("POST")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce = request.args['enonce']
@@ -144,7 +143,6 @@ def ajouter_devoir():
 @api.route('/devoirs', methods=['GET'])
 @jwt_optional
 def liste_devoirs():
-    print("GET")
     if 'classe' in request.args:
         devoirs = merge_pj(devoir_classe(request.args['classe']))
         return jsonify(devoirs=devoirs), 200
@@ -207,7 +205,6 @@ def pj():
 @api.route('/modif', methods=['PUT'])
 def modif():
     db = sqlite3.connect('src/devoirs.db')
-    print(request.args)
     c = db.cursor()
     f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
     db.commit()
@@ -227,6 +224,23 @@ def get_user_role():
         return jsonify(user=get_jwt_identity()), 200
     return '', 404
 
+@api.route('/gestion_classe', methods=['DELETE'])
+@jwt_required
+def remove_classe():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("DELETE FROM classes WHERE nom = ?;", [request.args['classe']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_classe', methods=['PATCH'])
+@jwt_required
+def modif_classe():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['new'], request.args['old']])
+    db.commit()
+    return '', 200
 
 """
 AUTH JWT
@@ -249,7 +263,7 @@ def login():
     pass_found = c.execute('SELECT pwd FROM enseignant WHERE mail = ?;', [username]).fetchone()
     if pass_found and check_password_hash(pass_found[0], password):
         # Create the tokens we will be sending back to the user
-        access_token = create_access_token(identity=username)
+        access_token = create_access_token(identity=username, expires_delta=False)
         refresh_token = create_refresh_token(identity=username)
 
         # Set the JWT cookies in the response

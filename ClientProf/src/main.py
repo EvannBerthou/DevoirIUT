@@ -43,7 +43,6 @@ def nouveau_devoir():
 
     elif request.method == 'POST':
         classes = ''.join([key+',' for key, val in request.form.items() if val == 'on'])
-        print(classes)
         enonce = request.form['enonce']
         matiere = request.form['matiere']
         date = request.form['date']
@@ -61,12 +60,10 @@ def nouveau_devoir():
 @app.route('/devoirs',methods=['GET', 'POST'])
 def affichage_devoirs():
     if request.method == 'GET':
-        print(request.cookies)
         resp_r = requests.get('http://localhost:5000/api/devoirs', cookies=request.cookies)
         if resp_r.status_code == 200:
             resp = json.loads(resp_r.content)
             classes=liste_classes()
-            print('resp ::',resp)
             return render_template('devoirs.html', devoirs=resp['devoirs'], user = resp['user'], classes=classes)
         else:
             return '<h1> Erreur </h1>'

@@ -1,0 +1,10 @@
+Page admin:
+    Gestion des classes
+        Suppression, ajout de classes
+        Gestion des profs dans la classe
+    Gestions des enseignants
+        Gestion des informations (nom, prénom, email, reset mdp)
+        Suppression, ajout d'un prof
+    Gestion des matières
+        Suppression, ajout
+
