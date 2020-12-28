@@ -1,0 +1,21 @@
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='classes.css') }}">
+    <script src="{{ url_for('static', filename='classes.js') }}"> </script>
+    <title> Excalynote </title>
+</head>
+<body>
+Bienvenue {{ user }}
+
+<h1> Liste des classes </h1>
+
+{% for classe in classes %}
+    <form action="/admin/classes" method="POST">
+        <textarea id="{{ classe }}" name="new" readonly>{{ classe }}</textarea>
+        <button type="button" id="m_{{classe}}" onclick="editable('{{ classe }}')"> M </button>
+        <button type="submit" value="{{classe}}" id="e_{{classe}}" name="original" style="display:none"> E </button>
+        <button type="submit" name="suppr" value="{{ classe }}"> X </button>
+    </form>
+{% endfor %}
+
+</body>

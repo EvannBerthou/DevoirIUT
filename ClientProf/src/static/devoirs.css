@@ -10,3 +10,29 @@ input[type="text"] {
     border: none;
     text-align: center;
 }
+
+.multiselect {
+    width: 200px;
+}
+.selectBox {
+    position: relative;
+}
+.selectbox select {
+    width: 100%;
+}
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#classes {
+    display: none;
+    border: 1px black solid;
+}
+
+#classes label {
+    display: block;
+}

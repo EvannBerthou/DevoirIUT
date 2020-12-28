@@ -30,7 +30,7 @@ function afficherClasses(e){
         for(let i =0;i!=selected.length;i++){
             if (selected[i].childNodes[0].data==options[k].name){
                 options[k].checked=true;
-            }   
+            }
         }
     }
     document.getElementById("classes").style.display = (ouvert === true) ? "block" : "none";

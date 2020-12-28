@@ -44,10 +44,10 @@
                                 <div id="classes_{{devoir[0]}}" style="display: block;">
                                     {% for classe in c %}
                                         <p class="classe_devoir_{{devoir[0]}}" style="font-size: 15px; line-height: 5px;">{{classe}}</p>
-                                    {% endfor %}    
+                                    {% endfor %}
                                 </div>
-                                
-                                <div id="selection_classe_{{devoir[0]}}" style="display: none;">   
+
+                                <div id="selection_classe_{{devoir[0]}}" style="display: none;">
                                     <div class="selectBox" value="{{devoir[0]}}" onclick="afficherClasses(this)">
                                         <select>
                                             <option> Choix des classes </option>
@@ -58,13 +58,13 @@
                                         {% for option in classes %}
                                             <label for="{{ option }}">
                                                 <input type="checkbox" class="option_{{devoir[0]}}" name="{{ option }}" />
-                                                {{ option }} 
+                                                {{ option }}
                                             </label>
                                         {% endfor %}
                                     </div>
                                 </div>
 
-                                
+
 
                             {% else %}
                                 {{ c }}
@@ -92,33 +92,4 @@
     <!--<div id="signaler"><u>Signaler bug/envoyer un commentaire</u></div>-->
     <a href="/nouveau">ajouter un devoir </a>
 </body>
-<style>
-.multiselect {
-    width: 200px;
-}
-.selectBox {
-    position: relative;
-}
-.selectbox select {
-    width: 100%;
-}
-.overSelect {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-}
-
-#classes {
-    display: none;
-    border: 1px black solid;
-}
-
-#classes label {
-    display: block;
-}
-</style>
-
-
 </html>
