@@ -14,6 +14,7 @@ def devoir_classe():
     resp_r = requests.get('http://localhost:5000/api/devoirs', params={'classe': classe})
     if resp_r.status_code == 200:
         resp = json.loads(resp_r.content)
+        print(resp)
         return render_template('devoirs.html', devoirs=resp['devoirs'])
     else:
         return '<h1> Erreur </h1>'
