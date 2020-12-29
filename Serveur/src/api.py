@@ -96,10 +96,7 @@ def merge_pj(devoirs,prof=False):
     for row in devoirs:
         devoir_id = row[0]
         if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
-            if prof:
-                parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) + [[classe[0] for classe in get_class(devoir_id)]]
-            else:
-                parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) 
+            parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) + [[classe[0] for classe in get_class(devoir_id) if prof]]
         # S'il y a une pièce jointe
         if row[5]:
             parsed[devoir_id][5].append((str(row[5]), row[6]))
