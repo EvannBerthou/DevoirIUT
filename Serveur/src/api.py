@@ -16,6 +16,7 @@ def safe_name(name):
     return "".join(c for c in name if c.isalnum() or c in keep).rstrip()
 
 def devoir_classe(classe):
+    print("devoir classe")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
@@ -43,6 +44,7 @@ def devoir_classe(classe):
     [classe]).fetchall()
 
 def devoir_enseignant(username):
+    print("devoir enseignant")
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
@@ -89,12 +91,15 @@ def get_class(id_devoir):
 
 
 # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
-def merge_pj(devoirs):
+def merge_pj(devoirs,prof=False):
     parsed = {}
     for row in devoirs:
         devoir_id = row[0]
         if not devoir_id in parsed: # Si c'est la première fois qu'on rencontre un devoir avec cet id
-            parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) + [[classe[0] for classe in get_class(devoir_id)]]
+            if prof:
+                parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) + [[classe[0] for classe in get_class(devoir_id)]]
+            else:
+                parsed[devoir_id] = list(row[0:5]) + [[]] + list(row[7:]) 
         # S'il y a une pièce jointe
         if row[5]:
             parsed[devoir_id][5].append((str(row[5]), row[6]))
@@ -144,13 +149,13 @@ def ajouter_devoir():
 @api.route('/devoirs', methods=['GET'])
 @jwt_optional
 def liste_devoirs():
-    print("GET")
+    print("GET",request.args)
     if 'classe' in request.args:
         devoirs = merge_pj(devoir_classe(request.args['classe']))
         return jsonify(devoirs=devoirs), 200
     else:
         username = get_jwt_identity()
-        devoirs = merge_pj(devoir_enseignant(username))
+        devoirs = merge_pj(devoir_enseignant(username),True)
         return jsonify(user=username, devoirs=devoirs), 200
 
 
