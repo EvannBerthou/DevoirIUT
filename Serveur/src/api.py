@@ -171,6 +171,13 @@ def classes():
     classes = c.execute("SELECT nom FROM classes;").fetchall()
     return jsonify(classes), 200
 
+@api.route('/enseignant', methods=['GET'])
+def enseignants():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    enseignants = c.execute("SELECT id,nom,prenom,mail FROM enseignant;").fetchall()
+    return jsonify(enseignants), 200
+
 @api.route('/matieres', methods=['GET'])
 @jwt_required
 def matieres():
@@ -239,6 +246,48 @@ def modif_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['new'], request.args['old']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_classe', methods=['POST'])
+@jwt_required
+def ajouter_classe():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("INSERT INTO classes(nom) VALUES (?);", [request.args['name'].replace(' ', '-')])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_enseignant', methods=['DELETE'])
+@jwt_required
+def remove_enseignant():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("DELETE FROM enseignant WHERE mail = ?;", [request.args['enseignant']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_enseignant', methods=['PATCH'])
+@jwt_required
+def modif_enseignant():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("UPDATE enseignant SET mail = ? WHERE mail = ?;", [request.args['new'], request.args['old']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_enseignant', methods=['POST'])
+@jwt_required
+def ajouter_enseignant():
+    print('t')
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    pwd = generate_password_hash(request.args['mdp'])
+    r = c.execute("INSERT INTO enseignant(nom,prenom,mail,pwd,admin) VALUES (?,?,?,?,0);", [
+        request.args['nom'],
+        request.args['prenom'],
+        request.args['mail'],
+        pwd])
     db.commit()
     return '', 200
 
