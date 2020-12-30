@@ -272,7 +272,11 @@ def remove_enseignant():
 def modif_enseignant():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("UPDATE enseignant SET mail = ? WHERE mail = ?;", [request.args['new'], request.args['old']])
+    mdp = generate_password_hash(request.args['mdp']) if request.args['mdp'] else None
+    r = c.execute("""UPDATE enseignant SET
+        nom = ?, prenom = ?, mail = ?, pwd = IFNULL(?, pwd)
+        WHERE id = ?;
+    """, [request.args['nom'], request.args['prenom'], request.args['mail'], mdp, request.args['id']])
     db.commit()
     return '', 200
 
