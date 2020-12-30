@@ -9,9 +9,19 @@ Bienvenue {{ user }}
 
 <h1> Liste des classes </h1>
 
+<!-- Il faudrait remplacer cette partie par une modal box
+    https://www.w3schools.com/howto/howto_css_modals.asp
+    Cela permet d'éviter d'aller une autre page
+-->
+
+<form action="/admin/classes" method="POST">
+    <input type="text" name="new" placeholder="Nom de la classe"></input>
+    <button type="submit"> Ajouter </button>
+</form>
+
 {% for classe in classes %}
-    <form action="/admin/classes" method="POST">
-        <textarea id="{{ classe }}" name="new" readonly>{{ classe }}</textarea>
+    <form class="classes" action="/admin/classes" method="POST">
+        <input id="{{ classe }}" name="name" readonly value="{{classe}}"></input>
         <button type="button" id="m_{{classe}}" onclick="editable('{{ classe }}')"> M </button>
         <button type="submit" value="{{classe}}" id="e_{{classe}}" name="original" style="display:none"> E </button>
         <button type="submit" name="suppr" value="{{ classe }}"> X </button>
