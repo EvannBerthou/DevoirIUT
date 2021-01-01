@@ -48,7 +48,11 @@ def gestion_classes():
         classes = liste_classes()
         enseignants = liste_enseignants()
         ce = classe_enseignants()
-        return render_template('classes.html', user = resp['user'], classes=classes, ce=ce)
+        classe_avec_prof = dict(zip(classes, [[] for _ in range(len(classes))]))
+        for x in ce:
+            classe_avec_prof[x[0]].append(x[1])
+        classe_avec_profs = list([list(x) for x in classe_avec_prof.items()])
+        return render_template('classes.html', user = resp['user'], enseignants=enseignants, classes=classe_avec_profs)
     return 'Error', 403
 
 @admin.route('/classes', methods=['POST'])
