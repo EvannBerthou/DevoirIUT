@@ -12,6 +12,12 @@ def liste_classes():
         return [''.join(classe) for classe in json.loads(classes_r.content)]
     return None
 
+def liste_classes_prof():
+    classes_r = requests.get('http://localhost:5000/api/classe', cookies=request.cookies)
+    if classes_r.status_code == 200:
+        return [''.join(classe) for classe in json.loads(classes_r.content)]
+    return None
+
 """
 def classe_devoirs(devoirs):
     dico_class={}
@@ -33,7 +39,7 @@ def home():
 @app.route('/nouveau', methods=['GET', 'POST'])
 def nouveau_devoir():
     if request.method == 'GET':
-        classes = liste_classes()
+        classes = liste_classes_prof()
         matieres = liste_matires()
         if classes:
             return render_template('nouveau.html', user = 'c',
