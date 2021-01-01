@@ -21,18 +21,35 @@ def liste_enseignants():
         return [[str(v) for v in enseignant] for enseignant in json.loads(enseignants_r.content)]
     return None
 
+def classe_enseignants():
+    ce_r = requests.get('http://localhost:5000/api/classe_enseignant', cookies=request.cookies)
+    if ce_r.status_code == 200:
+        return json.loads(ce_r.content)
+    return None
+
 @admin.route('/')
 def dashboard():
     if (resp := valid_access()):
         return render_template('admin.html', user = resp['user'])
     return 'Error', 404
 
+
+"""
+Pour chaque classse :
+    Récupérer la liste de tous les enseignants
+    Récupérer la liste de ses enseignants
+    Afficher la liste de tous les enseignants
+        Si l'enseignant est dans la liste des enseigantsn de la classe alors le marqué comme actif
+    Lorsque le bouton enrengistrer est pressé, envoyer la liste des profs selectionnés (meme ceux qui étaient déjà selectionnées)
+"""
 @admin.route('/classes', methods=['GET'])
 def gestion_classes():
     if (resp := valid_access()):
         classes = liste_classes()
-        return render_template('classes.html', user = resp['user'], classes=classes)
-    return 'Error', 404
+        enseignants = liste_enseignants()
+        ce = classe_enseignants()
+        return render_template('classes.html', user = resp['user'], classes=classes, ce=ce)
+    return 'Error', 403
 
 @admin.route('/classes', methods=['POST'])
 def suppr_classes():
