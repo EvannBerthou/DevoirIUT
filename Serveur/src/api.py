@@ -164,11 +164,24 @@ def sup_devoir():
     return '', 200
 
 @api.route('/classe', methods=['GET'])
+@jwt_optional
 def classes():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    classes = c.execute("SELECT nom FROM classes;").fetchall()
-    return jsonify(classes), 200
+    liste = None
+    # Liste des classes d'un prof
+    identity = get_jwt_identity()
+    if identity:
+        print(identity)
+        liste = c.execute("""
+            SELECT nom FROM classes WHERE id IN
+                (SELECT classe_id FROM classe_enseignant WHERE enseignant_id
+                    = (SELECT id from enseignant WHERE mail = ?));
+        """, [identity]).fetchall()
+    # Liste de toutes les classes
+    else:
+        liste = c.execute("SELECT nom FROM classes;").fetchall()
+    return jsonify(liste), 200
 
 @api.route('/enseignant', methods=['GET'])
 def enseignants():
