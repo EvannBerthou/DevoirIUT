@@ -1,4 +1,4 @@
-import sqlite3, os, io
+import sqlite3
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -251,12 +251,22 @@ def remove_classe():
     db.commit()
     return '', 200
 
+# TODO: Faire en sorte que l'id soit l'id et non le nom
 @api.route('/gestion_classe', methods=['PATCH'])
 @jwt_required
 def modif_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['new'], request.args['old']])
+    c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['nom'], request.args['id']])
+    c.execute("DELETE FROM classe_enseignant WHERE classe_id = (SELECT id FROM classes WHERE nom = ?);", [request.args['id']])
+    for e in request.args.getlist('enseignants'):
+        c.execute("""
+                INSERT INTO classe_enseignant VALUES
+                    (
+                        (SELECT id FROM enseignant WHERE mail = ?),
+                        (SELECT id FROM classes WHERE nom = ?)
+                    );
+        """, [e, request.args['id']])
     db.commit()
     return '', 200
 
