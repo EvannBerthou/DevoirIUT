@@ -58,9 +58,14 @@ def gestion_classes():
 @admin.route('/classes', methods=['POST'])
 def suppr_classes():
     if (resp := valid_access()):
-        if 'original' in request.form:
+        if 'id' in request.form:
             requests.patch('http://localhost:5000/api/gestion_classe', cookies=request.cookies,
-                    params={'old': request.form['original'], 'new': request.form['name']})
+                params={
+                    'id': request.form['id'],
+                    'nom': request.form['nom'],
+                    'enseignants': request.form.getlist('select')
+                }
+            )
         elif 'new' in request.form:
             requests.post('http://localhost:5000/api/gestion_classe', cookies=request.cookies, params={'name': request.form['new']})
         else:

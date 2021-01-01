@@ -14,7 +14,7 @@ Bienvenue {{ user }}
 <div id="myModal" class="modal">
     <div class="modal-content">
         <span id="modal_close">&times;</span>
-        <form action="/admin/enseignants" method="POST">
+        <form action="/admin/classes" method="POST">
             <input name="id" id="modal_id" type="hidden" value="" />
             <p>
             <label> Nom </label>
@@ -22,12 +22,13 @@ Bienvenue {{ user }}
             </p>
 
             <p>
-            <select id="modal_select" multiple>
+            <select name="select" id="modal_select" multiple>
                 {% for e in enseignants %}
                 <option> {{ e[3] }} </option>
                 {% endfor %}
             </select>
             </p>
+
             <button name="new" id="modal_submit" type="submit"> Ajouter </button>
         </form>
     </div>
@@ -40,7 +41,7 @@ Bienvenue {{ user }}
 
 {% for classe in classes %}
     <form class="classes" action="/admin/classes" method="POST">
-        <input id="{{ classe[0] }}" name="name" readonly value="{{ classe[0] }}"></input>
+        <span> {{ classe[0] }} </span>
         <button type="button" id="m_{{ classe[0] }}" onclick="open_modal({{ classe }})"> M </button>
         <button type="submit" name="suppr" value="{{ classe[0] }}"> X </button>
     </form>

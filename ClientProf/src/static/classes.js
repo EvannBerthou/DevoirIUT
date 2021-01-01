@@ -24,6 +24,7 @@ function init() {
 
 function set_modal_values(args) {
     const [nom, actifs] = args
+    modal_id.value = nom;
     modal_nom.value = nom;
     for (let i = 0; i < modal_select.options.length; i++) {
         let opt = modal_select.options[i];
