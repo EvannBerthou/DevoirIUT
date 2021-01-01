@@ -65,6 +65,14 @@ CREATE TABLE matiere_enseignant (
     FOREIGN KEY (matiere_id) REFERENCES matiere(id)
 );
 
+DROP TABLE IF EXISTS classe_enseignant;
+CREATE TABLE classe_enseignant (
+    enseignant_id INTEGER,
+    classe_id INTEGER,
+    FOREIGN KEY (enseignant_id) REFERENCES enseignant(id),
+    FOREIGN KEY (classe_id) REFERENCES classe(id)
+);
+
 INSERT INTO matiere (nom) VALUES ('Programmation');
 INSERT INTO matiere (nom) VALUES ('Algorithmie');
 INSERT INTO matiere (nom) VALUES ('Base_de_Donnée');

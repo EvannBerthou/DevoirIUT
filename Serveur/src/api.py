@@ -102,7 +102,6 @@ def merge_pj(devoirs):
 
 
 
-
 @api.route('/devoirs', methods=['POST'])
 @jwt_required
 def ajouter_devoir():
@@ -201,13 +200,12 @@ def pj():
     # Si aucun fichier n'a été trouvé dans la base de donné
     if f == None:
         # Message d'erreur
-        return None, 404
+        return '', 404
 
     # io.BytesIO permet de créer une sorte de fichier mais uniquement dans la RAM (au lieu d'écrire
     # dans un fichier puis de le lire comme on faisait avant, cela permet un gain de performance
     # énorme car cela évite de devoir faire un écrire puis lecture du fichier sur le disque dur
-    res = send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0]))
-    return res, 200
+    return send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0])), 200
 
 @api.route('/modif', methods=['PUT'])
 def modif():
@@ -230,6 +228,19 @@ def get_user_role():
     if r:
         return jsonify(user=get_jwt_identity()), 200
     return '', 404
+
+@api.route('/classe_enseignant', methods=['GET'])
+@jwt_required
+def classe_enseignants():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    ce = c.execute("""
+        SELECT classes.nom, mail
+        FROM classes, enseignant, classe_enseignant
+        WHERE enseignant.id = classe_enseignant.enseignant_id
+            AND classes.id = classe_enseignant.classe_id;
+    """).fetchall()
+    return jsonify(ce), 200
 
 @api.route('/gestion_classe', methods=['DELETE'])
 @jwt_required
