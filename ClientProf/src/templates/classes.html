@@ -4,34 +4,46 @@
     <script src="{{ url_for('static', filename='classes.js') }}"> </script>
     <title> Excalynote </title>
 </head>
-<body>
+<body onload="init()">
 Bienvenue {{ user }}
 
 <h1> Liste des classes </h1>
 
-<!-- Il faudrait remplacer cette partie par une modal box
-    https://www.w3schools.com/howto/howto_css_modals.asp
-    Cela permet d'éviter d'aller une autre page
--->
+<button id="myBtn" onclick="open_modal()"> Ajouter une classe </button>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span id="modal_close">&times;</span>
+        <form action="/admin/enseignants" method="POST">
+            <input name="id" id="modal_id" type="hidden" value="" />
+            <p>
+            <label> Nom </label>
+            <input id="modal_nom" type="text" name="nom" placeholder="Nom" />
+            </p>
+
+            <p>
+            <select id="modal_select" multiple>
+                {% for e in enseignants %}
+                <option> {{ e[3] }} </option>
+                {% endfor %}
+            </select>
+            </p>
+            <button name="new" id="modal_submit" type="submit"> Ajouter </button>
+        </form>
+    </div>
+</div>
 
 <form action="/admin/classes" method="POST">
     <input type="text" name="new" placeholder="Nom de la classe"></input>
     <button type="submit"> Ajouter </button>
 </form>
 
-
 {% for classe in classes %}
     <form class="classes" action="/admin/classes" method="POST">
-        <input id="{{ classe }}" name="name" readonly value="{{classe}}"></input>
-        <button type="button" id="m_{{classe}}" onclick="editable('{{ classe }}')"> M </button>
-        <button type="submit" value="{{classe}}" id="e_{{classe}}" name="original" style="display:none"> E </button>
-        <button type="submit" name="suppr" value="{{ classe }}"> X </button>
+        <input id="{{ classe[0] }}" name="name" readonly value="{{ classe[0] }}"></input>
+        <button type="button" id="m_{{ classe[0] }}" onclick="open_modal({{ classe }})"> M </button>
+        <button type="submit" name="suppr" value="{{ classe[0] }}"> X </button>
     </form>
-    {% for c in ce %}
-        {% if c[0] == classe %}
-        <p style="margin-left: 5%"> {{ c[1] }} </p>
-        {% endif %}
-    {% endfor %}
 {% endfor %}
 
 </body>
