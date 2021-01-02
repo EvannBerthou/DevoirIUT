@@ -26,32 +26,55 @@ for page in pages:
     for ressource in tree.findall('.//resources'):
         staff = ressource.find('staff')
         module = ressource.find('module')
+        # S'il y a au moins un prof et une matière
         if staff and module:
-            prof = (list(staff)[0].text) # Récupère le nom du prof
-            matiere = (list(module)[0].text) # Récupère le nom de la matière du prof
-            profs.add(prof)
-            matieres.add(matiere)
-            if not prof in matieres_prof:
-                matieres_prof[prof] = set()
-            matieres_prof[prof].add(matiere)
-
-#print(matieres_prof)
-#print(sorted(list(profs)))
-#print(sorted(list(matieres)))
+            # Ajoute chaque prof et chaque matière à chaqueprof
+            for prof in list(staff):
+                p = prof.text
+                profs.add(p)
+                if not p in matieres_prof:
+                    matieres_prof[p] = set()
+                for mat in list(module):
+                    m = mat.text
+                    matieres.add(m)
+                    matieres_prof[p].add(m)
 
 db = sqlite3.connect('src/devoirs.db')
 c = db.cursor()
 sql_str = open('db.sql').read()
 c.executescript(sql_str)
 
+print('Insertion classes')
 for classe in texts:
     c.execute('INSERT INTO classes (nom) VALUES (?);', [classe])
 
+print('Insertion matieres')
+for matiere in matieres:
+    c.execute('INSERT INTO matiere (nom) VALUES (?);', [matiere])
+
+print('Insertion profs')
+for prof in profs:
+    pwd = generate_password_hash('azerty')
+    c.execute("""
+        INSERT INTO enseignant (nom,prenom,mail,pwd,admin)
+        VALUES (?,'','', ?, 0);
+    """, [prof, pwd])
+
+print('Insertion matiere prof')
+for prof, mats in matieres_prof.items():
+    for mat in mats:
+        c.execute("""
+            INSERT INTO matiere_enseignant (enseignant_id, matiere_id)
+            VALUES ((SELECT id FROM enseignant WHERE nom = ?),
+                    (SELECT id FROM matiere WHERE nom = ?));
+        """, [prof, mat])
+
+
 pwd = generate_password_hash('C')
-c.execute("INSERT INTO enseignant VALUES (1,'a','b','c', ?, 1);", [pwd])
+c.execute("INSERT INTO enseignant (nom,prenom,mail,pwd,admin)VALUES ('a','b','c', ?, 1);", [pwd])
 
 pwd = generate_password_hash('SQL')
-c.execute("INSERT INTO enseignant VALUES (2,'s','q','l', ?, 0);", [pwd])
+c.execute("INSERT INTO enseignant (nom,prenom,mail,pwd,admin) VALUES ('s','q','l', ?, 0);", [pwd])
 
 #('Programmation'), ('Algorithmie'),('Base de Donnée'),('Anglais'),('Expression communication'),('Mathématique'),('Economie Générale');
 c.execute("INSERT INTO matiere_enseignant VALUES (1, 1);")
