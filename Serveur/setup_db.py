@@ -81,7 +81,5 @@ c.execute("INSERT INTO matiere_enseignant VALUES (1, 1);")
 c.execute("INSERT INTO matiere_enseignant VALUES (1, 2);")
 c.execute("INSERT INTO matiere_enseignant VALUES (2, 3);")
 
-c.execute("INSERT INTO classe_enseignant VALUES (1, 1);")
-
 c.close()
 db.commit()

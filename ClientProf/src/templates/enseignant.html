@@ -43,10 +43,10 @@ Bienvenue {{ user }}
 
 {% for enseignant in enseignants %}
     <form class="enseignants" action="/admin/enseignants" method="POST">
-        <input id="{{ enseignant[0] }}" name="name" readonly value="{{enseignant[3]}}"></input>
+        <input id="{{ enseignant[0] }}" name="name" readonly value="{{enseignant[1]}}"></input>
         <button type="button" id="m_{{enseignant[0]}}" onclick="open_modal({{enseignant}})"> M </button>
-        <button type="submit" value="{{enseignant[3]}}" id="e_{{enseignant[0]}}" name="original" style="display:none"> E </button>
-        <button type="submit" name="suppr" value="{{ enseignant[3] }}"> X </button>
+        <button type="submit" value="{{enseignant[1]}}" id="e_{{enseignant[0]}}" name="original" style="display:none"> E </button>
+        <button type="submit" name="suppr" value="{{ enseignant[1] }}"> X </button>
     </form>
 {% endfor %}
 

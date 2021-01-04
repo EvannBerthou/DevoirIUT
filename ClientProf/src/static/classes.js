@@ -1,12 +1,16 @@
 var open = false;
 var modal, close;
-var modal_id, modal_nom, modal_select, modal_submit;
+var modal_id, modal_nom, $modal_select, modal_submit;
 
 function init() {
     modal_id = document.getElementById('modal_id');
     modal_nom = document.getElementById('modal_nom');
-    modal_select = document.getElementById('modal_select');
     modal_submit = document.getElementById('modal_submit');
+
+    var $select = $("#modal_select").selectize({
+        sortField: 'text'
+    });
+    modal_select = $select[0].selectize;
 
     modal = document.getElementById("myModal");
     close = document.getElementById("modal_close");
@@ -26,16 +30,8 @@ function set_modal_values(args) {
     const [nom, actifs] = args
     modal_id.value = nom;
     modal_nom.value = nom;
-    for (let i = 0; i < modal_select.options.length; i++) {
-        let opt = modal_select.options[i];
-        opt.selected = false;
-        for (let j = 0; j < actifs.length; j++) {
-            if (opt.value === actifs[j]) {
-                opt.selected = true;
-                break;
-            }
-        }
-    }
+    console.log(actifs);
+    modal_select.setValue(actifs, true)
     modal_submit.textContent = "Modifier";
 }
 
@@ -44,6 +40,7 @@ function clear_modal_values() {
 }
 
 function open_modal(args) {
+    modal_select.clear();
     if (args !== undefined) {
         set_modal_values(args);
     }
