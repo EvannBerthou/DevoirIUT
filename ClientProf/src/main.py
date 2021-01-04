@@ -12,11 +12,13 @@ def liste_classes():
         return [''.join(classe) for classe in json.loads(classes_r.content)]
     return None
 
+# Renvoie le résultat + 0 si pas d'erreur sinon 1
 def liste_classes_prof():
     classes_r = requests.get('http://localhost:5000/api/classe', cookies=request.cookies)
+    content = json.loads(classes_r.content)
     if classes_r.status_code == 200:
-        return [''.join(classe) for classe in json.loads(classes_r.content)]
-    return None
+        return [''.join(classe) for classe in content], 0
+    return content['msg'], 1
 
 """
 def classe_devoirs(devoirs):
@@ -39,13 +41,13 @@ def home():
 @app.route('/nouveau', methods=['GET', 'POST'])
 def nouveau_devoir():
     if request.method == 'GET':
-        classes = liste_classes_prof()
+        result, err = liste_classes_prof()
         matieres = liste_matires()
-        if classes:
+        if not err:
             return render_template('nouveau.html', user = 'c',
-                classes=classes, matieres=matieres)
+                classes=classes, ratieres=matieres)
         else:
-            return '<h1> Erreur </h1>'
+            return f'<h1> {result} </h1>'
 
     elif request.method == 'POST':
         classes = ''.join([key+',' for key, val in request.form.items() if val == 'on'])
