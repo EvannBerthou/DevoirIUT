@@ -83,8 +83,8 @@ def get_class(id_devoir):
         SELECT nom
         FROM classes
         WHERE id IN (SELECT classe_id
-                    FROM devoir_classe
-                    WHERE devoir_id=? );
+                     FROM devoir_classe
+                     WHERE devoir_id=? );
         """,[id_devoir]).fetchall()
 
 
