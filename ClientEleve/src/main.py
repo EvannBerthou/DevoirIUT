@@ -15,8 +15,7 @@ def devoir_classe():
     if resp_r.status_code == 200:
         resp = json.loads(resp_r.content)
         return render_template('devoirs.html', devoirs=resp['devoirs'])
-    else:
-        return '<h1> Erreur </h1>'
+    return '<h1> Erreur </h1>'
 
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
@@ -27,13 +26,12 @@ def liste_classes():
 @app.route('/', methods=['GET'])
 def home():
     classes = liste_classes()
-    if classes is not None:
+    if classes:
         return render_template('index.html', classes=classes)
-    else:
-        return '<h1> Erreur </h1>'
+    return '<h1> Erreur </h1>'
 
 @app.route('/pj')
-def pj():
+def download_pj():
     # Fait la requête au serveur pour récupérer le pj par id
     pj_r = requests.get('http://localhost:5000/api/pj', params={'id': request.args['pj']})
     # Récupère le nom dans le headers

@@ -50,9 +50,13 @@ def dashboard():
     if (resp := valid_access()):
         return render_template('admin.html', user = resp['user'])
     return render_template('error.html', msg="Accès refusé"), 404
+"""
+Classes
+"""
 
+# Affiche la liste de toutes les classes (+ les profs dans chaque classe)
 @admin.route('/classes', methods=['GET'])
-def gestion_classes():
+def get_classes():
     if (resp := valid_access()):
         classes = liste_classes()
         enseignants = liste_enseignants()
@@ -66,8 +70,9 @@ def gestion_classes():
         return render_template('classes.html', user = resp['user'], enseignants=enseignants, classes=classe_avec_profs)
     return render_template('error.html', msg="Accès refusé"), 404
 
+# Modification d'une classe
 @admin.route('/classes', methods=['POST'])
-def suppr_classes():
+def post_classes():
     if (resp := valid_access()):
         # Modification
         if 'id' in request.form:
@@ -87,6 +92,11 @@ def suppr_classes():
         return redirect('/admin/classes')
     return render_template('error.html', msg="Accès refusé"), 404
 
+"""
+Matières
+"""
+
+# Affiche la liste de toutes les matières (+ les profs dans chaque matières)
 @admin.route('/matieres', methods=['GET'])
 def get_matieres():
     if (resp := valid_access()):
@@ -124,6 +134,11 @@ def post_matieres():
         return redirect('/admin/matieres')
     return render_template('error.html', msg="Accès refusé"), 404
 
+"""
+Enseignants
+"""
+
+# Affiche la liste de tous les profs (+ leurs infos : nom, prenom, mail)
 @admin.route('/enseignants', methods=['GET'])
 def get_enseignants():
     if (resp := valid_access()):

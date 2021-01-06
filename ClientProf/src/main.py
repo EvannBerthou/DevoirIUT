@@ -102,7 +102,7 @@ def logout():
     return resp
 
 @app.route('/pj')
-def pj():
+def download_pj():
     # Fait la requête au serveur pour récupérer le pj par id
     pj_r = requests.get('http://localhost:5000/api/pj', params={'id': request.args['pj']})
     # Récupère le nom dans le headers
