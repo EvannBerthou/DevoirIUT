@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, io
 from flask import Blueprint, request, jsonify, send_from_directory, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -64,16 +64,18 @@ def devoir_enseignant(username):
             WHERE
                 devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
        )
-       WHERE
+       WHERE prof = ?;
+    """,
+    [username]).fetchall()
+
+    """
            matiere IN (SELECT nom
                        FROM matiere
                        WHERE id
                        IN (SELECT matiere_id
                            FROM matiere_enseignant, enseignant
                            WHERE enseignant_id = enseignant.id AND nom = ?)
-           );
-    """,
-    [username]).fetchall()
+    """
 
 
 def get_class(id_devoir):
@@ -179,6 +181,7 @@ def classes():
         """, [identity]).fetchall()
         if not res:
             return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
+        liste = res
     # Liste de toutes les classes
     else:
         liste = c.execute("SELECT nom FROM classes;").fetchall()
@@ -318,7 +321,6 @@ def modif_enseignant():
 @api.route('/gestion_enseignant', methods=['POST'])
 @jwt_required
 def ajouter_enseignant():
-    print('t')
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     pwd = generate_password_hash(request.args['mdp'])
