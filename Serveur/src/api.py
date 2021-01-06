@@ -68,16 +68,6 @@ def devoir_enseignant(username):
     """,
     [username]).fetchall()
 
-    """
-           matiere IN (SELECT nom
-                       FROM matiere
-                       WHERE id
-                       IN (SELECT matiere_id
-                           FROM matiere_enseignant, enseignant
-                           WHERE enseignant_id = enseignant.id AND nom = ?)
-    """
-
-
 def get_class(id_devoir):
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -87,7 +77,8 @@ def get_class(id_devoir):
         WHERE id IN (SELECT classe_id
                      FROM devoir_classe
                      WHERE devoir_id=? );
-        """,[id_devoir]).fetchall()
+        """,
+        [id_devoir]).fetchall()
 
 
 # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
@@ -102,11 +93,13 @@ def merge_pj(devoirs):
             parsed[devoir_id][5].append((str(row[5]), row[6]))
     return list(parsed.values())
 
-
+"""
+DEVOIRS
+"""
 
 @api.route('/devoirs', methods=['POST'])
 @jwt_required
-def ajouter_devoir():
+def post_devoir():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce = request.args['enonce']
@@ -127,6 +120,7 @@ def ajouter_devoir():
             IFNULL(?, (date(datetime('now', '+7 day', 'localtime')))));
     """,
     [enonce,matiere,prof,date])
+
     devoir_id = c.execute("SELECT id FROM devoirs WHERE id=(SELECT MAX(id) FROM devoirs);").fetchone()[0]
     for classe in request.args['classe'].split(','):
         c.execute("""
@@ -143,14 +137,14 @@ def ajouter_devoir():
 
 @api.route('/devoirs', methods=['GET'])
 @jwt_optional
-def liste_devoirs():
-    if 'classe' in request.args:
+def get_devoirs():
+    username = get_jwt_identity()
+    if not username:
         devoirs = merge_pj(devoir_classe(request.args['classe']))
         return jsonify(devoirs=devoirs), 200
-    else:
-        username = get_jwt_identity()
-        devoirs = merge_pj(devoir_enseignant(username))
-        return jsonify(user=username, devoirs=devoirs), 200
+
+    devoirs = merge_pj(devoir_enseignant(username))
+    return jsonify(user=username, devoirs=devoirs), 200
 
 
 @api.route('/sup',methods=['POST'])
@@ -164,57 +158,6 @@ def sup_devoir():
     c.execute("DELETE FROM devoirs WHERE id = ?;", [i])
     db.commit()
     return '', 200
-
-@api.route('/classe', methods=['GET'])
-@jwt_optional
-def classes():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    liste = None
-    # Liste des classes d'un prof
-    identity = get_jwt_identity()
-    if identity:
-        res = c.execute("""
-            SELECT nom FROM classes WHERE id IN
-                (SELECT classe_id FROM classe_enseignant WHERE enseignant_id
-                    = (SELECT id from enseignant WHERE nom = ?));
-        """, [identity]).fetchall()
-        if not res:
-            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
-        liste = res
-    # Liste de toutes les classes
-    else:
-        liste = c.execute("SELECT nom FROM classes;").fetchall()
-    return jsonify(liste), 200
-
-@api.route('/enseignant', methods=['GET'])
-def enseignants():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    enseignants = c.execute("SELECT id,nom,prenom,mail FROM enseignant ORDER BY nom;").fetchall()
-    return jsonify(enseignants), 200
-
-@api.route('/matieres', methods=['GET'])
-@jwt_optional
-def matieres():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    liste = None
-    # Liste des matieres d'un prof
-    identity = get_jwt_identity()
-    if identity:
-        res = c.execute("""
-            SELECT nom FROM matiere WHERE id IN
-                (SELECT matiere_id FROM matiere_enseignant WHERE enseignant_id
-                    = (SELECT id from enseignant WHERE nom = ?));
-        """, [identity]).fetchall()
-        if not res:
-            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
-        liste = res
-    # Liste de toutes les matieres
-    else:
-        liste = c.execute("SELECT nom FROM matiere ORDER BY nom;").fetchall()
-    return jsonify(liste), 200
 
 @api.route('/pj', methods=['GET'])
 def pj():
@@ -232,26 +175,35 @@ def pj():
     return send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0])), 200
 
 @api.route('/modif', methods=['PUT'])
-def modif():
+def put_devoir():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
     db.commit()
     return '', 200
+"""
+Classe
+"""
 
-@api.route('/role', methods=['GET'])
-@jwt_required
-def get_user_role():
-    username = get_jwt_identity()
+@api.route('/classe', methods=['GET'])
+@jwt_optional
+def classes():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("""
-        SELECT 1 FROM enseignant
-            WHERE nom = ? AND admin = 1;
-    """, [username]).fetchone()
-    if r:
-        return jsonify(user=get_jwt_identity()), 200
-    return '', 404
+    # Liste des classes d'un prof
+    identity = get_jwt_identity()
+    if identity:
+        liste = c.execute("""
+            SELECT nom FROM classes WHERE id IN
+                (SELECT classe_id FROM classe_enseignant WHERE enseignant_id
+                    = (SELECT id from enseignant WHERE nom = ?));
+        """, [identity]).fetchall()
+        if not liste:
+            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
+        return jsonify(liste), 200
+
+    liste = c.execute("SELECT nom FROM classes;").fetchall()
+    return jsonify(liste), 200
 
 @api.route('/classe_enseignant', methods=['GET'])
 @jwt_required
@@ -266,31 +218,20 @@ def classe_enseignants():
     """).fetchall()
     return jsonify(ce), 200
 
-@api.route('/matiere_enseignant', methods=['GET'])
-@jwt_required
-def matiere_enseignants():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    ce = c.execute("""
-        SELECT matiere.nom, enseignant.nom
-        FROM matiere, enseignant, matiere_enseignant
-        WHERE enseignant.id = matiere_enseignant.enseignant_id
-          AND matiere.id    = matiere_enseignant.matiere_id;
-    """).fetchall()
-    return jsonify(ce), 200
 
 @api.route('/gestion_classe', methods=['DELETE'])
 @jwt_required
-def remove_classe():
+def delete_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("DELETE FROM classes WHERE nom = ?;", [request.args['classe']])
     db.commit()
     return '', 200
 
+
 @api.route('/gestion_classe', methods=['PATCH'])
 @jwt_required
-def modif_classe():
+def patch_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['nom'], request.args['id']])
@@ -306,18 +247,119 @@ def modif_classe():
     db.commit()
     return '', 200
 
+
 @api.route('/gestion_classe', methods=['POST'])
 @jwt_required
-def ajouter_classe():
+def post_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("INSERT INTO classes(nom) VALUES (?);", [request.args['name']])
     db.commit()
     return '', 200
 
+
+"""
+Enseignants
+"""
+
+@api.route('/enseignant', methods=['GET'])
+def get_enseignants():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    enseignants = c.execute("SELECT id,nom,prenom,mail FROM enseignant ORDER BY nom;").fetchall()
+    return jsonify(enseignants), 200
+
+@api.route('/role', methods=['GET'])
+@jwt_required
+def get_user_role():
+    username = get_jwt_identity()
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("""
+        SELECT 1 FROM enseignant
+            WHERE nom = ? AND admin = 1;
+    """, [username]).fetchone()
+    if r:
+        return jsonify(user=get_jwt_identity()), 200
+    return '', 404
+
+@api.route('/gestion_enseignant', methods=['DELETE'])
+@jwt_required
+def delete_enseignant():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    r = c.execute("DELETE FROM enseignant WHERE nom = ?;", [request.args['enseignant']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_enseignant', methods=['PATCH'])
+@jwt_required
+def patch_enseignant():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    mdp = generate_password_hash(request.args['mdp']) if request.args['mdp'] else None
+    r = c.execute("""UPDATE enseignant SET
+        nom = ?, prenom = ?, mail = ?, pwd = IFNULL(?, pwd)
+        WHERE id = ?;
+    """, [request.args['nom'], request.args['prenom'], request.args['mail'], mdp, request.args['id']])
+    db.commit()
+    return '', 200
+
+@api.route('/gestion_enseignant', methods=['POST'])
+@jwt_required
+def post_enseignant():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    pwd = generate_password_hash(request.args['mdp'])
+    r = c.execute("INSERT INTO enseignant(nom,prenom,mail,pwd,admin) VALUES (?,?,?,?,0);", [
+        request.args['nom'],
+        request.args['prenom'],
+        request.args['mail'],
+        pwd])
+    db.commit()
+    return '', 200
+
+"""
+Matières
+"""
+
+@api.route('/matieres', methods=['GET'])
+@jwt_optional
+def matieres():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    # Liste des matieres d'un prof
+    identity = get_jwt_identity()
+    if identity:
+        liste = c.execute("""
+            SELECT nom FROM matiere WHERE id IN
+                (SELECT matiere_id FROM matiere_enseignant WHERE enseignant_id
+                    = (SELECT id from enseignant WHERE nom = ?));
+        """, [identity]).fetchall()
+        if not liste:
+            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
+        return jsonify(liste), 200
+    # Liste de toutes les matieres
+    liste = c.execute("SELECT nom FROM matiere ORDER BY nom;").fetchall()
+    return jsonify(liste), 200
+
+@api.route('/matiere_enseignant', methods=['GET'])
+@jwt_required
+def get_matiere_enseignants():
+    db = sqlite3.connect('src/devoirs.db')
+    c = db.cursor()
+    ce = c.execute("""
+        SELECT matiere.nom, enseignant.nom
+        FROM matiere, enseignant, matiere_enseignant
+        WHERE enseignant.id = matiere_enseignant.enseignant_id
+          AND matiere.id    = matiere_enseignant.matiere_id;
+    """).fetchall()
+    return jsonify(ce), 200
+
+
 @api.route('/gestion_matieres', methods=['DELETE'])
 @jwt_required
-def remove_matieres():
+def delete_matieres():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("DELETE FROM matiere WHERE nom = ?;", [request.args['matieres']])
@@ -326,7 +368,7 @@ def remove_matieres():
 
 @api.route('/gestion_matieres', methods=['PATCH'])
 @jwt_required
-def modif_matieres():
+def patch_matieres():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     c.execute("UPDATE matiere SET nom = ? WHERE nom = ?;", [request.args['nom'], request.args['id']])
@@ -345,46 +387,10 @@ def modif_matieres():
 
 @api.route('/gestion_matieres', methods=['POST'])
 @jwt_required
-def ajouter_matieres():
+def post_matiere():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("INSERT INTO matiere(nom) VALUES (?);", [request.args['name']])
-    db.commit()
-    return '', 200
-
-@api.route('/gestion_enseignant', methods=['DELETE'])
-@jwt_required
-def remove_enseignant():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    r = c.execute("DELETE FROM enseignant WHERE nom = ?;", [request.args['enseignant']])
-    db.commit()
-    return '', 200
-
-@api.route('/gestion_enseignant', methods=['PATCH'])
-@jwt_required
-def modif_enseignant():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    mdp = generate_password_hash(request.args['mdp']) if request.args['mdp'] else None
-    r = c.execute("""UPDATE enseignant SET
-        nom = ?, prenom = ?, mail = ?, pwd = IFNULL(?, pwd)
-        WHERE id = ?;
-    """, [request.args['nom'], request.args['prenom'], request.args['mail'], mdp, request.args['id']])
-    db.commit()
-    return '', 200
-
-@api.route('/gestion_enseignant', methods=['POST'])
-@jwt_required
-def ajouter_enseignant():
-    db = sqlite3.connect('src/devoirs.db')
-    c = db.cursor()
-    pwd = generate_password_hash(request.args['mdp'])
-    r = c.execute("INSERT INTO enseignant(nom,prenom,mail,pwd,admin) VALUES (?,?,?,?,0);", [
-        request.args['nom'],
-        request.args['prenom'],
-        request.args['mail'],
-        pwd])
     db.commit()
     return '', 200
 
@@ -393,7 +399,7 @@ AUTH JWT
 """
 
 @api.route('/token/auth', methods=['POST'])
-def login():
+def post_login():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
