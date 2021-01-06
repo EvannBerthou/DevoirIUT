@@ -27,7 +27,7 @@ Bienvenue {{ user }}
             <p>
             <select name="select" id="modal_select" multiple>
                 {% for e in enseignants %}
-                <option> {{ e[1] }} </option>
+                <option value="{{ e[0] }}"> {{ e[1] }} </option>
                 {% endfor %}
             </select>
             </p>
@@ -37,14 +37,9 @@ Bienvenue {{ user }}
     </div>
 </div>
 
-<form action="/admin/classes" method="POST">
-    <input type="text" name="new" placeholder="Nom de la matière"></input>
-    <button type="submit"> Ajouter </button>
-</form>
-
 {% for matiere in matieres %}
-    <form class="matieres" action="/admin/matiere" method="POST">
-        <span> {{ matiere[0] }} </span>
+    <form class="matieres" action="/admin/matieres" method="POST">
+        <span> {{ matiere[1] }} </span>
         <button type="button" id="m_{{ matiere[0] }}" onclick="open_modal({{ matiere }})"> M </button>
         <button type="submit" name="suppr" value="{{ matiere[0] }}"> X </button>
     </form>

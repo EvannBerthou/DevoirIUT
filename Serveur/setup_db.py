@@ -52,34 +52,41 @@ print('Insertion matieres')
 for matiere in matieres:
     c.execute('INSERT INTO matiere (nom) VALUES (?);', [matiere])
 
+def split_infos(infos):
+    *nom_parties, prenom = infos.split(' ')
+    nom = ' '.join(nom_parties)
+    nom_login = nom[:5].replace(' ', '').lower()
+    prenom_login = prenom[:4].replace(' ', '').lower()
+    login = f'{prenom_login}.{nom_login}'
+
+    return login, nom, prenom
+
+login_profs = {}
 print('Insertion profs')
 for prof in profs:
     pwd = generate_password_hash('azerty')
+    login, nom, prenom = split_infos(prof)
+    login_profs[prof] = login
     c.execute("""
-        INSERT INTO enseignant (nom,prenom,mail,pwd,admin)
-        VALUES (?,'','', ?, 0);
-    """, [prof, pwd])
+        INSERT INTO enseignant (login, nom, prenom, mail, pwd, admin)
+        VALUES (?, ?, ?, '', ?, 0);
+    """, [login, nom, prenom, pwd])
 
 print('Insertion matiere prof')
 for prof, mats in matieres_prof.items():
     for mat in mats:
         c.execute("""
             INSERT INTO matiere_enseignant (enseignant_id, matiere_id)
-            VALUES ((SELECT id FROM enseignant WHERE nom = ?),
+            VALUES ((SELECT id FROM enseignant WHERE login = ?),
                     (SELECT id FROM matiere WHERE nom = ?));
-        """, [prof, mat])
+        """, [login_profs[prof], mat])
 
 
 pwd = generate_password_hash('C')
-c.execute("INSERT INTO enseignant (nom,prenom,mail,pwd,admin)VALUES ('a','b','c', ?, 1);", [pwd])
+c.execute("INSERT INTO enseignant (login,nom,prenom,mail,pwd,admin)VALUES ('a', 'a','b','c', ?, 1);", [pwd])
 
 pwd = generate_password_hash('SQL')
-c.execute("INSERT INTO enseignant (nom,prenom,mail,pwd,admin) VALUES ('s','q','l', ?, 0);", [pwd])
-
-#('Programmation'), ('Algorithmie'),('Base de Donnée'),('Anglais'),('Expression communication'),('Mathématique'),('Economie Générale');
-c.execute("INSERT INTO matiere_enseignant VALUES (1, 1);")
-c.execute("INSERT INTO matiere_enseignant VALUES (1, 2);")
-c.execute("INSERT INTO matiere_enseignant VALUES (2, 3);")
+c.execute("INSERT INTO enseignant (login,nom,prenom,mail,pwd,admin) VALUES ('s', 's','q','l', ?, 0);", [pwd])
 
 c.close()
 db.commit()

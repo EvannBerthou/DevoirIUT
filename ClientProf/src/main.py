@@ -35,11 +35,10 @@ def home():
 
 @app.route('/nouveau', methods=['GET'])
 def get_nouveau():
-    result_classe, err_classe = liste_classes_prof()
+    result_classes, err_classe = liste_classes_prof()
     result_mat, err_mat = liste_matieres()
     if not err_classe and not err_mat:
-        return render_template('nouveau.html', user = 'c', classes=result_classe, matieres=result_mat)
-    print(err_classe, err_mat)
+        return render_template('nouveau.html', user = 'c', classes=result_classes, matieres=result_mat)
     # Forme un message d'erreur
     s = '<h1>'
     if err_classe:
