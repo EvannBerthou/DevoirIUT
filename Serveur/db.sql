@@ -44,6 +44,7 @@ CREATE TABLE devoir_classe (
 DROP TABLE IF EXISTS enseignant;
 CREATE TABLE enseignant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL,
     nom TEXT NOT NULL,
     prenom TEXT NOT NULL,
     mail TEXT NOT NULL,
@@ -72,11 +73,3 @@ CREATE TABLE classe_enseignant (
     FOREIGN KEY (enseignant_id) REFERENCES enseignant(id),
     FOREIGN KEY (classe_id) REFERENCES classe(id)
 );
-
-INSERT INTO matiere (nom) VALUES ('Programmation');
-INSERT INTO matiere (nom) VALUES ('Algorithmie');
-INSERT INTO matiere (nom) VALUES ('Base_de_Donnée');
-INSERT INTO matiere (nom) VALUES ('Mathématique');
-INSERT INTO matiere (nom) VALUES ('Anglais');
-INSERT INTO matiere (nom) VALUES ('Expression_communication');
-INSERT INTO matiere (nom) VALUES ('Economie_Générale');

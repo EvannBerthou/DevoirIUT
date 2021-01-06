@@ -198,13 +198,13 @@ def classes():
         liste = c.execute("""
             SELECT nom FROM classes WHERE id IN
                 (SELECT classe_id FROM classe_enseignant WHERE enseignant_id
-                    = (SELECT id from enseignant WHERE nom = ?));
+                    = (SELECT id from enseignant WHERE login = ?));
         """, [identity]).fetchall()
         if not liste:
             return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
 
-    liste = c.execute("SELECT nom FROM classes;").fetchall()
+    liste = c.execute("SELECT id,nom FROM classes;").fetchall()
     return jsonify(liste), 200
 
 @api.route('/classe_enseignant', methods=['GET'])
@@ -213,7 +213,7 @@ def classe_enseignants():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     ce = c.execute("""
-        SELECT classes.nom, enseignant.nom
+        SELECT classes.nom, enseignant.id, (enseignant.nom || '' || enseignant.prenom)
         FROM classes, enseignant, classe_enseignant
         WHERE enseignant.id = classe_enseignant.enseignant_id
             AND classes.id = classe_enseignant.classe_id;
@@ -226,7 +226,7 @@ def classe_enseignants():
 def delete_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("DELETE FROM classes WHERE nom = ?;", [request.args['classe']])
+    r = c.execute("DELETE FROM classes WHERE id = ?;", [request.args['id']])
     db.commit()
     return '', 200
 
@@ -236,16 +236,10 @@ def delete_classe():
 def patch_classe():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    c.execute("UPDATE classes SET nom = ? WHERE nom = ?;", [request.args['nom'], request.args['id']])
-    c.execute("DELETE FROM classe_enseignant WHERE classe_id = (SELECT id FROM classes WHERE nom = ?);", [request.args['id']])
+    c.execute("UPDATE classes SET nom = ? WHERE id = ?;", [request.args['nom'], request.args['id']])
+    c.execute("DELETE FROM classe_enseignant WHERE classe_id = ?;", [request.args['id']])
     for e in request.args.getlist('enseignants'):
-        c.execute("""
-                INSERT INTO classe_enseignant VALUES
-                    (
-                        (SELECT id FROM enseignant WHERE nom = ?),
-                        (SELECT id FROM classes WHERE nom = ?)
-                    );
-        """, [e, request.args['id']])
+        c.execute("INSERT INTO classe_enseignant VALUES (?, ?);", [e, request.args['id']])
     db.commit()
     return '', 200
 
@@ -268,7 +262,7 @@ Enseignants
 def get_enseignants():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    enseignants = c.execute("SELECT id,nom,prenom,mail FROM enseignant ORDER BY nom;").fetchall()
+    enseignants = c.execute("SELECT id, (nom || ' ' || prenom), mail FROM enseignant ORDER BY nom;").fetchall()
     return jsonify(enseignants), 200
 
 @api.route('/role', methods=['GET'])
@@ -279,7 +273,7 @@ def get_user_role():
     c = db.cursor()
     r = c.execute("""
         SELECT 1 FROM enseignant
-            WHERE nom = ? AND admin = 1;
+            WHERE login = ? AND admin = 1;
     """, [username]).fetchone()
     if r:
         return jsonify(user=get_jwt_identity()), 200
@@ -290,7 +284,7 @@ def get_user_role():
 def delete_enseignant():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("DELETE FROM enseignant WHERE nom = ?;", [request.args['enseignant']])
+    r = c.execute("DELETE FROM enseignant WHERE id = ?;", [request.args['enseignant']])
     db.commit()
     return '', 200
 
@@ -313,7 +307,7 @@ def post_enseignant():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     pwd = generate_password_hash(request.args['mdp'])
-    r = c.execute("INSERT INTO enseignant(nom,prenom,mail,pwd,admin) VALUES (?,?,?,?,0);", [
+    r = c.execute("INSERT INTO enseignant(login,nom,prenom,mail,pwd,admin) VALUES ('',?,?,?,?,0);", [
         request.args['nom'],
         request.args['prenom'],
         request.args['mail'],
@@ -336,13 +330,13 @@ def matieres():
         liste = c.execute("""
             SELECT nom FROM matiere WHERE id IN
                 (SELECT matiere_id FROM matiere_enseignant WHERE enseignant_id
-                    = (SELECT id from enseignant WHERE nom = ?));
+                    = (SELECT id from enseignant WHERE login = ?));
         """, [identity]).fetchall()
         if not liste:
             return jsonify({'msg': 'Aucune matieres trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
     # Liste de toutes les matieres
-    liste = c.execute("SELECT nom FROM matiere ORDER BY nom;").fetchall()
+    liste = c.execute("SELECT id,nom FROM matiere ORDER BY nom;").fetchall()
     return jsonify(liste), 200
 
 @api.route('/matiere_enseignant', methods=['GET'])
@@ -351,7 +345,7 @@ def get_matiere_enseignants():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     ce = c.execute("""
-        SELECT matiere.nom, enseignant.nom
+        SELECT matiere.nom, enseignant.id, (enseignant.nom || ' ' || enseignant.prenom)
         FROM matiere, enseignant, matiere_enseignant
         WHERE enseignant.id = matiere_enseignant.enseignant_id
           AND matiere.id    = matiere_enseignant.matiere_id;
@@ -364,7 +358,7 @@ def get_matiere_enseignants():
 def delete_matieres():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    r = c.execute("DELETE FROM matiere WHERE nom = ?;", [request.args['matieres']])
+    r = c.execute("DELETE FROM matiere WHERE id = ?;", [request.args['id']])
     db.commit()
     return '', 200
 
@@ -373,17 +367,10 @@ def delete_matieres():
 def patch_matieres():
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    c.execute("UPDATE matiere SET nom = ? WHERE nom = ?;", [request.args['nom'], request.args['id']])
-    c.execute("DELETE FROM matiere_enseignant WHERE matiere_id = (SELECT id FROM matiere WHERE nom = ?);", [request.args['id']])
+    c.execute("UPDATE matiere SET nom = ? WHERE id = ?;", [request.args['nom'], request.args['id']])
+    c.execute("DELETE FROM matiere_enseignant WHERE matiere_id = ?;", [request.args['id']])
     for e in request.args.getlist('enseignants'):
-        print(e)
-        c.execute("""
-                INSERT INTO matiere_enseignant VALUES
-                    (
-                        (SELECT id FROM enseignant WHERE nom = ?),
-                        (SELECT id FROM matiere WHERE nom = ?)
-                    );
-        """, [e, request.args['id']])
+        c.execute("INSERT INTO matiere_enseignant VALUES (?, ?);", [e, request.args['id']])
     db.commit()
     return '', 200
 
@@ -414,7 +401,7 @@ def post_login():
 
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
-    pass_found = c.execute('SELECT pwd FROM enseignant WHERE nom = ?;', [username]).fetchone()
+    pass_found = c.execute('SELECT pwd FROM enseignant WHERE login = ?;', [username]).fetchone()
     if pass_found and check_password_hash(pass_found[0], password):
         # Create the tokens we will be sending back to the user
         access_token = create_access_token(identity=username, expires_delta=False)
