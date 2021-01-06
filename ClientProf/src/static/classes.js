@@ -27,14 +27,10 @@ function init() {
 }
 
 function set_modal_values(args) {
-    console.log(args)
     const [id, nom, actifs] = args
     modal_id.value = id;
     modal_nom.value = nom;
-    ids = []
-    for (let i = 0; i < actifs.length; ++i) {
-        ids.push(actifs[i][0]);
-    }
+    ids = actifs.map(x => x[0])
     modal_select.setValue(ids, true)
     modal_submit.textContent = "Modifier";
 }
