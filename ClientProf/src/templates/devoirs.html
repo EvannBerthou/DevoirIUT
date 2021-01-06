@@ -2,123 +2,155 @@
 <html>
 <head>
     <meta charset="utf-8">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="{{ url_for('static', filename='devoirs.css') }}">
     <script src="{{ url_for('static', filename='devoirs.js') }}"> </script>
     <title>Excalynote</title>
 </head>
 
 <body>
-    <h2> Bienvenue {{ user }} </h2>
+	<div id="header"><a href="https://moodle.uvsq.fr/moodle2021/my/"><img src="logo-iut.png" alt="Moodle"> </a> </div>
+    <h2> Bienvenue humain </h2>
     <table id="devoirs">
         <tr>
             <th class="gauche"></th>
-            <!--<th>Numéro :</td>-->
             <th>Énoncé :</td>
             <th>Matière :</td>
-            <th>Prof :</td>
             <th>Date :</td>
             <th>Pièce jointe :</td>
             <th>À rendre :</td>
-            <th>Classes :</td>
         </tr>
 
         {% for devoir in devoirs %}
-            <tr id="line_{{devoir[0]}}">
-                <form action="/devoirs" method="POST" id="form_{{devoir[0]}}" name="devoir">
-                    <th class="gauche">
-                        {{ loop.index }}
-                    </th>
-                    {% for c in devoir[1:] %}
-                        <th id="{{loop.index}}">
-                            {# L'index 5 correspond à l'index de la liste des pièces jointe #}
-                            {% if loop.index == 5 %}
-                                {% for pj in c %}
-                                    <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a> </br>
-                                {% endfor %}
-                            {% elif loop.index==1 %}
-                                <textarea style="text-align: center;"class="{{devoir[0]}}" name="enonce" readonly>{{ c }}</textarea>
+        <tr id="line_{{devoir[0]}}">
+            <th class="gauche">
+                {{ loop.index }}
+            </th>
 
-                            {% elif loop.index==4 %}
-                                <input type="text" value="{{ c }}" class="{{devoir[0]}}" name="date" readonly></input>
-                            {% elif loop.index==7 %}
-                                <div id="classes_{{devoir[0]}}" style="display: block;">
-                                    {% for classe in c %}
-                                        <p class="classe_devoir_{{devoir[0]}}" style="font-size: 15px; line-height: 5px;">{{classe}}</p>
-                                    {% endfor %}    
-                                </div>
-                                
-                                <div id="selection_classe_{{devoir[0]}}" style="display: none;">   
-                                    <div class="selectBox" value="{{devoir[0]}}" onclick="afficherClasses(this)">
-                                        <select>
-                                            <option> Choix des classes </option>
-                                        </select>
-                                        <div class="overSelect"></div>
-                                    </div>
-                                    <div id="classes">
-                                        {% for option in classes %}
-                                            <label for="{{ option }}">
-                                                <input type="checkbox" class="option_{{devoir[0]}}" name="{{ option }}" />
-                                                {{ option }} 
-                                            </label>
-                                        {% endfor %}
-                                    </div>
-                                </div>
+            <td>
+                <span> {{ devoir[1] }} </span>
+            </td>
 
-                                
+            <td>
+                <span> {{ devoir[2] }} </span>
+            </td>
 
-                            {% else %}
-                                {{ c }}
-                            {% endif %}
-                        </th>
+			<td>
+                <span> {{ devoir[4] }} </span>
+			</td>
 
+            <td>
+            {% for pj in devoir[5] %}
+                <a href="{{ url_for('pj', pj = pj[0]) }}"> {{ pj[1] }} </a>
+                <button class="del_button_{{devoir[0]}} X" >
+                    <i class="material-icons" style="font-size:15px;color:red;">clear</i>
+                </button>
+                <br/>
+            {% endfor %}
+            </td>
+
+            <td>
+                {{ devoir[6] }}
+            </td>
+
+            <td>
+                <div id="classes_{{devoir[0]}}" style="display: block;">
+                    {% for classe in devoirs[7] %}
+                    <p class="classe_devoir_{{devoir[0]}}" style="font-size: 15px; line-height: 5px;">{{classe}}</p>
                     {% endfor %}
-                    <th>
-                        <button type="button" style="display: block;" id="button_{{devoir[0]}}"
-                            value="{{devoir[0]}}" onclick="editable(this)" > Modifier</button>
+                </div>
 
-                        <button type="submit" style="display: none;" name='devoir_id'
-                            id="save_button_{{devoir[0]}}" value="{{devoir[0]}}">Enregistrer</button>
-                    </th>
-                    <th>
-                        <form action='/devoirs' method='POST' id="centre">
-                            <button type="submit" name='delete_button' value="{{devoir[0]}}"> suprrimer devoir  </button>
-                        </form>
-                    </th>
-                </form>
-            </tr>
+                <div id="selection_classe_{{devoir[0]}}" style="display: none;">
+                    <div class="selectBox" value="{{devoir[0]}}" onclick="afficherClasses(this)">
+                        <select>
+                            <option> Choix des classes </option>
+                        </select>
+                        <div class="overSelect"></div>
+                    </div>
+                    <div id="classes">
+                        {% for option in classes %}
+                        <label for="{{ option }}">
+                            <input type="checkbox" class="option_{{devoir[0]}}" name="{{ option }}" />
+                            {{ option }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </td>
 
-       {% endfor %}
+            <button type="submit" style="display: none;" id="save_button_{{devoir[0]}}" value="{{devoir[0]}}">Enregistrer</button>
+			</td>
+			<td>
+				<form action='/devoirs' method='POST' id="centre">
+                    <button type="submit" name='delete_button' value="{{ devoir[0]}} "> Supprimer devoir </button>
+				</form>
+			</td>
+			</form>
+		</tr>
+        {% endfor %}
     </table>
-    <!--<div id="signaler"><u>Signaler bug/envoyer un commentaire</u></div>-->
-    <a href="/nouveau">ajouter un devoir </a>
 </body>
-<style>
-.multiselect {
-    width: 200px;
-}
-.selectBox {
-    position: relative;
-}
-.selectbox select {
-    width: 100%;
-}
-.overSelect {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-}
-
-#classes {
-    display: none;
-    border: 1px black solid;
-}
-
-#classes label {
-    display: block;
-}
-</style>
-
-
+<a href="/nouveau">ajouter un devoir </a>
 </html>
+
+<script type="text/javascript">
+    var open = false;
+    function editable(e) {
+        if (!open){
+            open = true;
+            let elem = document.getElementsByClassName(e.value);
+            let del = document.getElementsByClassName("del_button_" + e.value);
+			init (e);
+            document.getElementById("save_button_" + e.value).style.display = 'block';
+            document.getElementById("button_" + e.value).style.display = 'none';
+            document.getElementById("add_button_" + e.value).style.display = 'inline';
+            document.getElementById("matiere1_" + e.value).style.display = 'none';
+            document.getElementById("matiere2_" + e.value).style.display = 'block';
+            document.getElementById("enonce_" + e.value).readOnly = false;
+            console.log(e, e.value);
+            console.log(elem, elem.length);
+            for(let i = 0; i != elem.length; i++){
+				console.log(elem);
+                elem[i].readOnly = false;
+            }
+			for(let i = 0; i != del.length; i++){
+				console.log(del);
+                del[i].style.display = "inline";
+            }
+        }
+        else {
+            alert("Vous ne pouvez modifier qu'un devoir à la fois !")
+        }
+	}
+
+	var observe;
+	if (window.attachEvent) {
+		observe = function (element, event, handler) {
+			element.attachEvent('on'+event, handler);
+		};
+	}
+	else {
+		observe = function (element, event, handler) {
+			element.addEventListener(event, handler, false);
+		};
+	}
+	function init (e) {
+		var text = document.getElementById("enonce_" + e.value);
+		function resize () {
+			text.style.height = 'auto';
+			text.style.height = text.scrollHeight+'px';
+		}
+		/* 0-timeout to get the already changed text */
+		function delayedResize () {
+			window.setTimeout(resize, 0);
+		}
+		observe(text, 'change',  resize);
+		observe(text, 'cut',     delayedResize);
+		observe(text, 'paste',   delayedResize);
+		observe(text, 'drop',    delayedResize);
+		observe(text, 'keydown', delayedResize);
+
+		text.focus();
+		resize();
+	}
+</script>

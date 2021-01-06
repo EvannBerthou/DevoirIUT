@@ -1,0 +1,53 @@
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='enseignant.css') }}">
+    <script src="{{ url_for('static', filename='enseignant.js') }}"> </script>
+    <title> Excalynote </title>
+</head>
+<body onload="init()">
+Bienvenue {{ user }}
+
+<h1> Liste des enseignant </h1>
+
+<button id="myBtn" onclick="open_modal()"> Ajouter un enseignant </button>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span id="modal_close">&times;</span>
+        <form action="/admin/enseignants" method="POST">
+            <input name="id" id" id="modal_id" type="hidden" value="" />
+            <p>
+            <label> Nom </label>
+            <input id="modal_nom" type="text" name="nom" placeholder="Nom" />
+            </p>
+
+            <p>
+            <label> Prénom </label>
+            <input id="modal_prenom" type="text" name="prenom" placeholder="Prénom" />
+            </p>
+
+            <p>
+            <label> Mail </label>
+            <input id="modal_mail" type="text" name="mail" placeholder="Mail" />
+            </p>
+
+            <p>
+            <label> Mot de passe </label>
+            <input id="modal_mdp" type="password" name="mdp" placeholder="Mot de passe" />
+            </p>
+
+            <button name="new" id="modal_submit" type="submit"> Ajouter </button>
+        </form>
+    </div>
+</div>
+
+{% for enseignant in enseignants %}
+    <form class="enseignants" action="/admin/enseignants" method="POST">
+        <span> {{ enseignant[1] }} </span>
+        <button type="button" id="m_{{enseignant[0]}}" onclick="open_modal({{enseignant}})"> M </button>
+        <button type="submit" value="{{enseignant[1]}}" id="e_{{enseignant[0]}}" name="original" style="display:none"> E </button>
+        <button type="submit" name="suppr" value="{{ enseignant[1] }}"> X </button>
+    </form>
+{% endfor %}
+
+</body>
