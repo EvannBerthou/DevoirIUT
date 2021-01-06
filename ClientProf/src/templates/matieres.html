@@ -1,0 +1,53 @@
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='classes.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/js/standalone/selectize.min.js" integrity="sha256-+C0A5Ilqmu4QcSPxrlGpaZxJ04VjsRjKu+G82kl5UJk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/css/selectize.bootstrap3.min.css" integrity="sha256-ze/OEYGcFbPRmvCnrSeKbRTtjG4vGLHXgOqsyLFTRjg=" crossorigin="anonymous" />
+    <script src="{{ url_for('static', filename='classes.js') }}"> </script>
+    <title> Excalynote </title>
+</head>
+<body onload="init()">
+Bienvenue {{ user }}
+
+<h1> Liste des matieres </h1>
+
+<button id="myBtn" onclick="open_modal()"> Ajouter une classe </button>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span id="modal_close">&times;</span>
+        <form action="/admin/matieres" method="POST">
+            <input name="id" id="modal_id" type="hidden" value="" />
+            <p>
+            <label> Nom </label>
+            <input id="modal_nom" type="text" name="nom" placeholder="Nom" />
+            </p>
+
+            <p>
+            <select name="select" id="modal_select" multiple>
+                {% for e in enseignants %}
+                <option> {{ e[1] }} </option>
+                {% endfor %}
+            </select>
+            </p>
+
+            <button name="new" id="modal_submit" type="submit"> Ajouter </button>
+        </form>
+    </div>
+</div>
+
+<form action="/admin/classes" method="POST">
+    <input type="text" name="new" placeholder="Nom de la matière"></input>
+    <button type="submit"> Ajouter </button>
+</form>
+
+{% for matiere in matieres %}
+    <form class="matieres" action="/admin/matiere" method="POST">
+        <span> {{ matiere[0] }} </span>
+        <button type="button" id="m_{{ matiere[0] }}" onclick="open_modal({{ matiere }})"> M </button>
+        <button type="submit" name="suppr" value="{{ matiere[0] }}"> X </button>
+    </form>
+{% endfor %}
+
+</body>
