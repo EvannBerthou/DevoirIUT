@@ -201,7 +201,7 @@ def classes():
                     = (SELECT id from enseignant WHERE nom = ?));
         """, [identity]).fetchall()
         if not liste:
-            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
+            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
 
     liste = c.execute("SELECT nom FROM classes;").fetchall()
@@ -339,7 +339,7 @@ def matieres():
                     = (SELECT id from enseignant WHERE nom = ?));
         """, [identity]).fetchall()
         if not liste:
-            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 410
+            return jsonify({'msg': 'Aucune matieres trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
     # Liste de toutes les matieres
     liste = c.execute("SELECT nom FROM matiere ORDER BY nom;").fetchall()
