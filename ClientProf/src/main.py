@@ -24,9 +24,10 @@ def liste_classes_prof():
 # Liste de toutes les matières
 def liste_matieres():
     matieres_r = requests.get('http://localhost:5000/api/matieres', cookies=request.cookies)
+    content = json.loads(matieres_r.content)
     if matieres_r.status_code == 200:
-        return [''.join(matiere) for matiere in json.loads(matieres_r.content)]
-    return None
+        return [''.join(classe) for classe in content], 0
+    return content['msg'], 1
 
 @app.route('/')
 def home():
@@ -34,11 +35,20 @@ def home():
 
 @app.route('/nouveau', methods=['GET'])
 def get_nouveau():
-    result, err = liste_classes_prof()
-    matieres = liste_matieres()
-    if not err:
-        return render_template('nouveau.html', user = 'c', classes=result, matieres=matieres)
-    return f'<h1> {result} </h1>'
+    result_classe, err_classe = liste_classes_prof()
+    result_mat, err_mat = liste_matieres()
+    if not err_classe and not err_mat:
+        return render_template('nouveau.html', user = 'c', classes=result_classe, matieres=result_mat)
+    print(err_classe, err_mat)
+    # Forme un message d'erreur
+    s = '<h1>'
+    if err_classe:
+        s += result_classes
+        s += '<br>'
+    if err_mat:
+        s += result_mat
+    s += '</h1>'
+    return s
 
 @app.route('/nouveau', methods=['POST'])
 def post_nouveau():
