@@ -10,18 +10,21 @@ def valid_access():
         return json.loads(role_r.content)
     return None
 
+# Liste des classes
 def liste_classes():
     classes_r = requests.get('http://localhost:5000/api/classe')
     if classes_r.status_code == 200:
         return [classe[0] for classe in json.loads(classes_r.content)]
     return None
 
+# Liste des enseignants
 def liste_enseignants():
     enseignants_r = requests.get('http://localhost:5000/api/enseignant')
     if enseignants_r.status_code == 200:
         return [[str(v) for v in enseignant] for enseignant in json.loads(enseignants_r.content)]
     return None
 
+# Liste des classes d'un enseignant
 def classe_enseignants():
     ce_r = requests.get('http://localhost:5000/api/classe_enseignant', cookies=request.cookies)
     if ce_r.status_code == 200:
