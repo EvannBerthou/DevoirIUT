@@ -47,10 +47,8 @@
 
         <label> Matière </label>  <br>
         <select name="matiere">
-            <option value="Programmation"> Programmation </option>
             {% for matiere in matieres %}
                 <option value={{ matiere }}> {{ matiere }} </option>
-
             {% endfor %}
         </select>
 
