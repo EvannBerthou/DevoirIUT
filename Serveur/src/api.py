@@ -1,22 +1,28 @@
 import sqlite3, io
-from flask import Blueprint, request, jsonify, send_from_directory, send_file
-from werkzeug.security import generate_password_hash, check_password_hash
+from typing import *
 
-from flask_jwt_extended import (
+from flask import Blueprint, request, jsonify, send_from_directory, send_file # type : ignore
+from werkzeug.security import generate_password_hash, check_password_hash # type : ignore
+from werkzeug.wrappers import Response
+
+from flask_jwt_extended import ( # type : ignore
     jwt_required, create_access_token, jwt_optional,
     jwt_refresh_token_required, create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
-)
+) # type : ignore
 
 api = Blueprint('api', __name__)
 
-def safe_name(name):
+Str_response = Tuple[str, int]
+Str_or_Response = Tuple[Union[str, Response], int]
+Response_code = Tuple[Response, int]
+
+def safe_name(name: str) -> str:
     keep = (' ','.','_')
     return "".join(c for c in name if c.isalnum() or c in keep).rstrip()
 
-def devoir_classe(classe):
-    print("devoir classe")
+def devoir_classe(classe: str) -> List[str]:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
@@ -43,8 +49,7 @@ def devoir_classe(classe):
     """,
     [classe]).fetchall()
 
-def devoir_enseignant(username):
-    print("devoir enseignant")
+def devoir_enseignant(username: str) -> List[str]:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
@@ -70,7 +75,7 @@ def devoir_enseignant(username):
     """,
     [username]).fetchall()
 
-def get_class(id_devoir):
+def get_class(id_devoir: int) -> List[str]:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     return c.execute("""
@@ -84,7 +89,7 @@ def get_class(id_devoir):
 
 
 # Fusionne les colonnes afin d'avoir les pièces jointes dans une liste
-def merge_pj(devoirs,prof=False):
+def merge_pj(devoirs: List, prof: bool = False) -> List:
     parsed = {}
     for row in devoirs:
         devoir_id = row[0]
@@ -101,7 +106,7 @@ DEVOIRS
 
 @api.route('/devoirs', methods=['POST'])
 @jwt_required
-def post_devoir():
+def post_devoir() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enonce = request.args['enonce']
@@ -139,7 +144,7 @@ def post_devoir():
 
 @api.route('/devoirs', methods=['GET'])
 @jwt_optional
-def get_devoirs():
+def get_devoirs() -> Str_response:
     username = get_jwt_identity()
     if not username:
         devoirs = merge_pj(devoir_classe(request.args['classe']))
@@ -150,7 +155,7 @@ def get_devoirs():
 
 
 @api.route('/sup',methods=['POST'])
-def sup_devoir():
+def sup_devoir() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     i = request.args['devoir_id']
     c = db.cursor()
@@ -162,7 +167,7 @@ def sup_devoir():
     return '', 200
 
 @api.route('/pj', methods=['GET'])
-def pj():
+def pj() -> Str_or_Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     f = c.execute("SELECT nom, contenue FROM pj WHERE id = ?;", [request.args['id']]).fetchone()
@@ -177,7 +182,7 @@ def pj():
     return send_file(io.BytesIO(f[1]), as_attachment=True, attachment_filename=safe_name(f[0])), 200
 
 @api.route('/modif', methods=['PUT'])
-def put_devoir():
+def put_devoir() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     f = c.execute("UPDATE devoirs SET enonce=?, jour=? WHERE id=?", [request.args['enonce'], request.args['date'], request.args['devoir_id']])
@@ -189,7 +194,7 @@ Classe
 
 @api.route('/classe', methods=['GET'])
 @jwt_optional
-def classes():
+def classes() -> Str_or_Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     # Liste des classes d'un prof
@@ -209,7 +214,7 @@ def classes():
 
 @api.route('/classe_enseignant', methods=['GET'])
 @jwt_required
-def classe_enseignants():
+def classe_enseignants() -> Response_code:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     ce = c.execute("""
@@ -223,7 +228,7 @@ def classe_enseignants():
 
 @api.route('/gestion_classe', methods=['DELETE'])
 @jwt_required
-def delete_classe():
+def delete_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("DELETE FROM classes WHERE id = ?;", [request.args['id']])
@@ -233,7 +238,7 @@ def delete_classe():
 
 @api.route('/gestion_classe', methods=['PATCH'])
 @jwt_required
-def patch_classe():
+def patch_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     c.execute("UPDATE classes SET nom = ? WHERE id = ?;", [request.args['nom'], request.args['id']])
@@ -246,7 +251,7 @@ def patch_classe():
 
 @api.route('/gestion_classe', methods=['POST'])
 @jwt_required
-def post_classe():
+def post_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("INSERT INTO classes(nom) VALUES (?);", [request.args['name']])
@@ -259,7 +264,7 @@ Enseignants
 """
 
 @api.route('/enseignant', methods=['GET'])
-def get_enseignants():
+def get_enseignants() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     enseignants = c.execute("SELECT id, (nom || ' ' || prenom), mail FROM enseignant ORDER BY nom;").fetchall()
@@ -267,7 +272,7 @@ def get_enseignants():
 
 @api.route('/role', methods=['GET'])
 @jwt_required
-def get_user_role():
+def get_user_role() -> Str_response:
     username = get_jwt_identity()
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -281,7 +286,7 @@ def get_user_role():
 
 @api.route('/gestion_enseignant', methods=['DELETE'])
 @jwt_required
-def delete_enseignant():
+def delete_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("DELETE FROM enseignant WHERE id = ?;", [request.args['enseignant']])
@@ -290,7 +295,7 @@ def delete_enseignant():
 
 @api.route('/gestion_enseignant', methods=['PATCH'])
 @jwt_required
-def patch_enseignant():
+def patch_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     mdp = generate_password_hash(request.args['mdp']) if request.args['mdp'] else None
@@ -303,7 +308,7 @@ def patch_enseignant():
 
 @api.route('/gestion_enseignant', methods=['POST'])
 @jwt_required
-def post_enseignant():
+def post_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     pwd = generate_password_hash(request.args['mdp'])
@@ -321,7 +326,7 @@ Matières
 
 @api.route('/matieres', methods=['GET'])
 @jwt_optional
-def matieres():
+def matieres() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     # Liste des matieres d'un prof
@@ -341,7 +346,7 @@ def matieres():
 
 @api.route('/matiere_enseignant', methods=['GET'])
 @jwt_required
-def get_matiere_enseignants():
+def get_matiere_enseignants() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     ce = c.execute("""
@@ -355,7 +360,7 @@ def get_matiere_enseignants():
 
 @api.route('/gestion_matieres', methods=['DELETE'])
 @jwt_required
-def delete_matieres():
+def delete_matieres() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("DELETE FROM matiere WHERE id = ?;", [request.args['id']])
@@ -364,7 +369,7 @@ def delete_matieres():
 
 @api.route('/gestion_matieres', methods=['PATCH'])
 @jwt_required
-def patch_matieres():
+def patch_matieres() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     c.execute("UPDATE matiere SET nom = ? WHERE id = ?;", [request.args['nom'], request.args['id']])
@@ -376,7 +381,7 @@ def patch_matieres():
 
 @api.route('/gestion_matieres', methods=['POST'])
 @jwt_required
-def post_matiere():
+def post_matiere() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
     r = c.execute("INSERT INTO matiere(nom) VALUES (?);", [request.args['name']])
@@ -388,7 +393,7 @@ AUTH JWT
 """
 
 @api.route('/token/auth', methods=['POST'])
-def post_login():
+def post_login() -> Str_response:
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
@@ -417,7 +422,7 @@ def post_login():
 
 @api.route('/token/refresh', methods=['POST'])
 @jwt_refresh_token_required
-def refresh():
+def refresh() -> Str_response:
     # Create the new access token
     current_user = get_jwt_identity()
     access_token = create_access_token(identity=current_user)
@@ -427,7 +432,7 @@ def refresh():
     return resp, 200
 
 @api.route('/token/remove', methods=['POST'])
-def logout():
+def logout() -> Str_response:
     resp = jsonify({'logout': True})
     unset_jwt_cookies(resp)
     return resp, 200
