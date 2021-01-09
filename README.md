@@ -21,3 +21,4 @@ Benjamin : Back-end
 Alexandre : SQL/BD  
 Thomas : HTML/CSS  
 Hugo : HTML/CSS  
+Eliott : HTML/CSS
