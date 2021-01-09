@@ -34,17 +34,70 @@ def backend_request(f: Callable, url: str, **params: Any) -> Any:
 
     return response
 
+# Vérifie si l'utilisateur connecté à le rôle d'admin
+def get_username() -> Any:
+    response = backend_request(requests.get, 'http://localhost:5000/api/role', cookies=request.cookies)
+    return json.loads(response.content)['user']
+
 # Liste de toutes les classes
-def liste_classes() -> List[str]:
+def liste_classes() -> List[Tuple[int, str]]:
     response = backend_request(requests.get, 'http://localhost:5000/api/classe')
     return list(json.loads(response.content))
 
 # Liste des classes d'un prof ou message d'erreur + erreur
 def liste_classes_prof() -> List[str]:
     response = backend_request(requests.get, 'http://localhost:5000/api/classe', cookies=request.cookies)
-    return list(json.loads(response.content))
+    return [x[0] for x in json.loads(response.content)]
 
 # Liste de toutes les matières
-def liste_matieres() -> List[str]:
+def liste_matieres() -> Any:
+    matieres_r = requests.get('http://localhost:5000/api/matieres')
+    return json.loads(matieres_r.content)
+
+# Liste de toutes les matières
+def liste_matieres_prof() -> List[str]:
     response = backend_request(requests.get, 'http://localhost:5000/api/matieres', cookies=request.cookies)
-    return list(json.loads(response.content))
+    return [x[0] for x in json.loads(response.content)]
+
+# Liste des enseignants
+def liste_enseignants() -> Any:
+    response = requests.get('http://localhost:5000/api/enseignant')
+    return json.loads(response.content)
+
+# Liste des classes d'un enseignant
+def classe_enseignants() -> Any:
+    ce_r = backend_request(requests.get, 'http://localhost:5000/api/classe_enseignant', cookies=request.cookies)
+    return json.loads(ce_r.content)
+
+# Liste des matières d'un enseignant
+def matiere_enseignants() -> Any:
+    r = requests.get('http://localhost:5000/api/matiere_enseignant', cookies=request.cookies)
+    return json.loads(r.content)
+
+def merge_with_prof(d: List[Tuple[int, str]], profs: List[str]) -> List:
+    id_d = {v:i for i,v in d}
+    d_avec_profs: Dict = {k:[] for k in [c[1] for c in d]}
+
+    for x in profs:
+        d_avec_profs[x[0]].append(x[1:])
+
+    # Ajoute l'id au début de la liste pour passer de [nom, [profs]] à [id, nom, [profs]]
+    d_avec_profs_et_id = [[id_d[d[0]]] + list(d) for d in d_avec_profs.items()]
+    return d_avec_profs_et_id
+
+def send_form_to(url: str) -> None:
+    # Modification
+    if 'id' in request.form:
+        requests.patch(url, cookies=request.cookies,
+            params={
+                'id': request.form['id'],
+                'nom': request.form['nom'],
+                'enseignants': request.form.getlist('select')
+            }
+        )
+    # Ajout
+    elif 'new' in request.form:
+        requests.post(url, cookies=request.cookies, params={'name': request.form['new']})
+    # Suppression
+    else:
+        requests.delete(url, cookies=request.cookies, params={'id': request.form['suppr']})

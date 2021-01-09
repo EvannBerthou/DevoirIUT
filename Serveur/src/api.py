@@ -1,16 +1,16 @@
 import sqlite3, io
 from typing import *
 
-from flask import Blueprint, request, jsonify, send_from_directory, send_file # type : ignore
-from werkzeug.security import generate_password_hash, check_password_hash # type : ignore
+from flask import Blueprint, request, jsonify, send_from_directory, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.wrappers import Response
 
-from flask_jwt_extended import ( # type : ignore
+from flask_jwt_extended import (
     jwt_required, create_access_token, jwt_optional,
     jwt_refresh_token_required, create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
-) # type : ignore
+)
 
 api = Blueprint('api', __name__)
 
@@ -147,8 +147,10 @@ def post_devoir() -> Str_response:
 def get_devoirs() -> Str_response:
     username = get_jwt_identity()
     if not username:
-        devoirs = merge_pj(devoir_classe(request.args['classe']))
-        return jsonify(devoirs=devoirs), 200
+        if 'classe' in request.args:
+            devoirs = merge_pj(devoir_classe(request.args['classe']))
+            return jsonify(devoirs=devoirs), 200
+        return '', 401
 
     devoirs = merge_pj(devoir_enseignant(username))
     return jsonify(user=username, devoirs=devoirs), 200
@@ -205,8 +207,6 @@ def classes() -> Str_or_Response:
                 (SELECT classe_id FROM classe_enseignant WHERE enseignant_id
                     = (SELECT id from enseignant WHERE login = ?));
         """, [identity]).fetchall()
-        if not liste:
-            return jsonify({'msg': 'Aucune classe trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
 
     liste = c.execute("SELECT id,nom FROM classes;").fetchall()
@@ -337,8 +337,6 @@ def matieres() -> Str_response:
                 (SELECT matiere_id FROM matiere_enseignant WHERE enseignant_id
                     = (SELECT id from enseignant WHERE login = ?));
         """, [identity]).fetchall()
-        if not liste:
-            return jsonify({'msg': 'Aucune matieres trouvée pour cet enseignant'}), 404
         return jsonify(liste), 200
     # Liste de toutes les matieres
     liste = c.execute("SELECT id,nom FROM matiere ORDER BY nom;").fetchall()

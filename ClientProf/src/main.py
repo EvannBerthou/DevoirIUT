@@ -17,7 +17,7 @@ def home() -> Response:
 @app.route('/nouveau', methods=['GET'])
 def get_nouveau() -> Str_response:
     result_classes = liste_classes_prof()
-    result_mat = liste_matieres()
+    result_mat = liste_matieres_prof()
     if result_classes and result_mat:
         return render_template('nouveau.html', user = 'c', classes=result_classes, matieres=result_mat)
 
