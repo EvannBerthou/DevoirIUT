@@ -27,7 +27,7 @@ def devoir_classe() -> Str_or_Response:
 def liste_classes() -> Optional[List[str]]:
     classes_r = requests.get('http://localhost:5000/api/classe')
     if classes_r.status_code == 200:
-        return [''.join(classe) for classe in json.loads(classes_r.content)]
+        return [''.join(classe[1]) for classe in json.loads(classes_r.content)]
     return None
 
 @app.route('/', methods=['GET'])
