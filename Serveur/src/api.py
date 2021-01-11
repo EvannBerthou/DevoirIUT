@@ -55,9 +55,10 @@ def devoir_classe(classe: str) -> List[str]:
             WHERE
                 devoir_pj.devoir_id = devoirs.id AND devoir_pj.pj_id = pj.id
         )
-        WHERE
-           did IN (SELECT devoir_id FROM devoir_classe, classes
-                          WHERE classe_id = classes.id AND classes.nom = ?);
+        WHERE (
+            did IN (SELECT devoir_id FROM devoir_classe, classes WHERE classe_id = classes.id AND classes.nom = ?)
+            AND jour >= DATE('now')
+        );
     """,
     [classe]).fetchall()
 
