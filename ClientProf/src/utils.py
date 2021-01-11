@@ -37,7 +37,7 @@ def backend_request(f: Callable, url: str, **params: Any) -> Any:
 
 # Vérifie si l'utilisateur connecté à le rôle d'admin
 def get_username() -> Any:
-    response = backend_request(requests.get, 'http://localhost:5000/api/role', cookies=request.cookies)
+    response = backend_request(requests.get, 'http://localhost:5000/api/username', cookies=request.cookies)
     return json.loads(response.content)['user']
 
 # Liste de toutes les classes
@@ -107,6 +107,7 @@ def require_admin(f: Callable) -> Callable:
     @wraps(f)
     def decorated_function(*args: Any, **kwargs: Any) -> Any:
         response = backend_request(requests.get, 'http://localhost:5000/api/is_admin', cookies=request.cookies)
+        print(response.content)
         if json.loads(response.content) != "ok":
             return render_template('error.html', msg = "Vous n'êtes pas admin")
         return f(*args, **kwargs)
