@@ -35,7 +35,11 @@ def backend_request(f: Callable, url: str, **params: Any) -> Any:
 
     return response
 
-# Vérifie si l'utilisateur connecté à le rôle d'admin
+def is_logged_in() -> bool:
+    response = backend_request(requests.get, 'http://localhost:5000/api/is_logged_in', cookies=request.cookies)
+    return json.loads(response.content) == 'ok'
+
+# Récupère le username du login
 def get_username() -> Any:
     response = backend_request(requests.get, 'http://localhost:5000/api/username', cookies=request.cookies)
     return json.loads(response.content)['user']

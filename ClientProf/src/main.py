@@ -12,6 +12,8 @@ app.secret_key = 'secret key'
 
 @app.route('/')
 def home() -> Response:
+    if is_logged_in():
+        return redirect('/devoirs')
     return redirect('/login')
 
 @app.route('/nouveau', methods=['GET'])

@@ -286,6 +286,12 @@ def get_enseignants() -> Response:
 def get_username() -> Response:
     return jsonify(user = get_jwt_identity())
 
+
+@api.route('/is_logged_in', methods=['GET'])
+@jwt_optional
+def is_logged_in() -> Response:
+    return jsonify('ok' if get_jwt_identity else 'not ok')
+
 @api.route('/is_admin', methods=['GET'])
 @jwt_required
 def get_is_admin() -> Response:
