@@ -7,6 +7,7 @@ from utils import *
 admin = Blueprint('admin', __name__)
 
 @admin.route('/')
+@require_admin
 def dashboard() -> Str_response:
     username = get_username()
     return render_template('admin.html', user = username)
@@ -17,6 +18,7 @@ Classes
 
 # Affiche la liste de toutes les classes (+ les profs dans chaque classe)
 @admin.route('/classes', methods=['GET'])
+@require_admin
 def get_classes() -> Str_response:
     username = get_username()
     classes = liste_classes()
@@ -27,6 +29,7 @@ def get_classes() -> Str_response:
 
 # Modification d'une classe
 @admin.route('/classes', methods=['POST'])
+@require_admin
 def post_classes() -> Str_or_Response:
     username = get_username()
     send_form_to('http://localhost:5000/api/gestion_classe')
@@ -38,6 +41,7 @@ Matières
 
 # Affiche la liste de toutes les matières (+ les profs dans chaque matières)
 @admin.route('/matieres', methods=['GET'])
+@require_admin
 def get_matieres() -> Str_response:
     username = get_username()
     matieres = liste_matieres()
@@ -48,6 +52,7 @@ def get_matieres() -> Str_response:
 
 
 @admin.route('/matieres', methods=['POST'])
+@require_admin
 def post_matieres() -> Str_or_Response:
     username = get_username()
     send_form_to('http://localhost:5000/api/gestion_matieres')
@@ -59,12 +64,14 @@ Enseignants
 
 # Affiche la liste de tous les profs (+ leurs infos : nom, prenom, mail)
 @admin.route('/enseignants', methods=['GET'])
+@require_admin
 def get_enseignants() -> Str_response:
     username = get_username()
     enseignants = liste_enseignants()
     return render_template('enseignant.html', user = username, enseignants=enseignants)
 
 @admin.route('/enseignants', methods=['POST'])
+@require_admin
 def post_enseignants() -> Str_or_Response:
     username = get_username()
     send_form_to('http://localhost:5000/api/gestion_enseignant')

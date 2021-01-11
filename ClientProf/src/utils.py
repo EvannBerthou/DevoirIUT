@@ -2,6 +2,7 @@ import requests, json
 from typing import *
 from flask import Blueprint, request, jsonify, render_template, redirect, abort
 from werkzeug.wrappers import Response
+from functools import wraps
 
 utils = Blueprint('app', __name__)
 
@@ -89,7 +90,7 @@ def send_form_to(url: str) -> None:
     # Modification
     if 'id' in request.form:
         requests.patch(url, cookies=request.cookies,
-            params={
+            params = {
                 'id': request.form['id'],
                 'nom': request.form['nom'],
                 'enseignants': request.form.getlist('select')
@@ -101,3 +102,12 @@ def send_form_to(url: str) -> None:
     # Suppression
     else:
         requests.delete(url, cookies=request.cookies, params={'id': request.form['suppr']})
+
+def require_admin(f: Callable) -> Callable:
+    @wraps(f)
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
+        response = backend_request(requests.get, 'http://localhost:5000/api/is_admin', cookies=request.cookies)
+        if json.loads(response.content) != "ok":
+            return render_template('error.html', msg = "Vous n'êtes pas admin")
+        return f(*args, **kwargs)
+    return decorated_function
