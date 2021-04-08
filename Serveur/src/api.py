@@ -6,8 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.wrappers import Response
 
 from flask_jwt_extended import (
-    jwt_required, create_access_token, jwt_optional,
-    jwt_refresh_token_required, create_refresh_token,
+    jwt_required, create_access_token,
+    create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
 )
@@ -155,7 +155,7 @@ def post_devoir() -> Str_response:
     return ''
 
 @api.route('/devoirs', methods=['GET'])
-@jwt_optional
+@jwt_required(optional=True)
 def get_devoirs() -> Response_code:
     username = get_jwt_identity()
     if not username:
@@ -207,7 +207,7 @@ Classe
 """
 
 @api.route('/classe', methods=['GET'])
-@jwt_optional
+@jwt_required(optional=True)
 def classes() -> Str_or_Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -225,7 +225,7 @@ def classes() -> Str_or_Response:
     return jsonify(liste), 200
 
 @api.route('/classe_enseignant', methods=['GET'])
-@jwt_required
+@jwt_required()
 def classe_enseignants() -> Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -239,7 +239,7 @@ def classe_enseignants() -> Response:
 
 
 @api.route('/gestion_classe', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def delete_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -249,7 +249,7 @@ def delete_classe() -> Str_response:
 
 
 @api.route('/gestion_classe', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 def patch_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -262,7 +262,7 @@ def patch_classe() -> Str_response:
 
 
 @api.route('/gestion_classe', methods=['POST'])
-@jwt_required
+@jwt_required()
 def post_classe() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -283,18 +283,18 @@ def get_enseignants() -> Response:
     return jsonify(enseignants)
 
 @api.route('/username', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_username() -> Response:
     return jsonify(user = get_jwt_identity())
 
 
 @api.route('/is_logged_in', methods=['GET'])
-@jwt_optional
+@jwt_required(optional=True)
 def is_logged_in() -> Response:
     return jsonify('ok' if get_jwt_identity else 'not ok')
 
 @api.route('/is_admin', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_is_admin() -> Response:
     username = get_jwt_identity()
     db = sqlite3.connect('src/devoirs.db')
@@ -307,7 +307,7 @@ def get_is_admin() -> Response:
     return jsonify(msg)
 
 @api.route('/gestion_enseignant', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def delete_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -316,7 +316,7 @@ def delete_enseignant() -> Str_response:
     return ''
 
 @api.route('/gestion_enseignant', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 def patch_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -329,7 +329,7 @@ def patch_enseignant() -> Str_response:
     return ''
 
 @api.route('/gestion_enseignant', methods=['POST'])
-@jwt_required
+@jwt_required()
 def post_enseignant() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -347,7 +347,7 @@ Matières
 """
 
 @api.route('/matieres', methods=['GET'])
-@jwt_optional
+@jwt_required(optional=True)
 def matieres() -> Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -365,7 +365,7 @@ def matieres() -> Response:
     return jsonify(liste)
 
 @api.route('/matiere_enseignant', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_matiere_enseignants() -> Response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -379,7 +379,7 @@ def get_matiere_enseignants() -> Response:
 
 
 @api.route('/gestion_matieres', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def delete_matieres() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -388,7 +388,7 @@ def delete_matieres() -> Str_response:
     return ''
 
 @api.route('/gestion_matieres', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 def patch_matieres() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -400,7 +400,7 @@ def patch_matieres() -> Str_response:
     return ''
 
 @api.route('/gestion_matieres', methods=['POST'])
-@jwt_required
+@jwt_required()
 def post_matiere() -> Str_response:
     db = sqlite3.connect('src/devoirs.db')
     c = db.cursor()
@@ -441,7 +441,7 @@ def post_login() -> Response_code:
     return jsonify({"error": "Bad username or password"}), 401
 
 @api.route('/token/refresh', methods=['POST'])
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh() -> Response:
     # Create the new access token
     current_user = get_jwt_identity()
