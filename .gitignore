@@ -132,3 +132,4 @@ activate.sh
 run.sh
 *.db
 TODO
+tags
